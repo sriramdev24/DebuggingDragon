@@ -1,0 +1,423 @@
+{% extends "base.html" %}
+
+{% block title %}DNA Matcher | SkillSwap DNA{% endblock %}
+
+{% block content %}
+<div class="space-y-8 py-2">
+
+  <!-- Header Banner -->
+  <div class="neo-card p-6 sm:p-8 bg-white space-y-4">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div class="space-y-1">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#fef08a] border-2 border-slate-900 text-xs font-black">
+          <span>Dual Matching Engine</span>
+        </div>
+        <h1 class="font-display font-black text-2xl sm:text-4xl text-slate-900 tracking-tight">
+          Reciprocal & Circular Matches
+        </h1>
+        <p class="text-xs sm:text-sm font-semibold text-slate-600">
+          Showing complementary matches for <strong>{{ current_user.name }}</strong> ({{ current_user.department }}).
+        </p>
+      </div>
+
+      <!-- Tab Switcher (Screenshot Neo-Pills Style) -->
+      <div class="flex flex-wrap items-center gap-2">
+        <button onclick="switchTab('direct')" id="tab-btn-direct" class="px-4 py-2 rounded-full border-2 border-slate-900 bg-slate-900 text-white font-extrabold text-xs shadow-[2px_2px_0px_0px_rgba(0,0,0,0.3)] transition-all">
+          2-Way Matches ({{ direct_matches|length }})
+        </button>
+        <button onclick="switchTab('pods')" id="tab-btn-pods" class="px-4 py-2 rounded-full border-2 border-slate-900 bg-white hover:bg-slate-100 text-slate-900 font-extrabold text-xs shadow-[2px_2px_0px_0px_#0f172a] transition-all">
+          Circular Pods ({{ group_pods|length }})
+        </button>
+        <button onclick="switchTab('theory')" id="tab-btn-theory" class="px-4 py-2 rounded-full border-2 border-slate-900 bg-white hover:bg-slate-100 text-slate-900 font-extrabold text-xs shadow-[2px_2px_0px_0px_#0f172a] transition-all">
+          How It Works
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 1: Direct 2-Person Reciprocal Matches -->
+  <div id="tab-content-direct" class="space-y-6">
+    {% if direct_matches %}
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {% for match in direct_matches %}
+        {% set card_theme = 'card-mint' if loop.index % 2 == 1 else 'card-purple' %}
+        <div class="{{ card_theme }} p-6 flex flex-col justify-between space-y-6">
+          
+          <div class="space-y-4">
+            <!-- Header Pill & Match Score -->
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-slate-900 bg-white shadow-[2px_2px_0px_0px_#0f172a]">
+                  <img src="{{ match.partner.avatar }}" alt="{{ match.partner.name }}" class="w-full h-full object-cover">
+                </div>
+                <div>
+                  <h3 class="font-display font-black text-lg text-slate-900">{{ match.partner.name }}</h3>
+                  <div class="text-[11px] font-bold text-slate-700">{{ match.partner.department }}</div>
+                </div>
+              </div>
+
+              <div class="px-3 py-1 rounded-full bg-white border-2 border-slate-900 font-display font-black text-sm text-slate-900 shadow-[1.5px_1.5px_0px_0px_#0f172a]">
+                {{ match.compatibility_score }}% Match
+              </div>
+            </div>
+
+            <!-- Reciprocal Barter Comparison Box with Animated Hover Swap -->
+            <div class="p-3 sm:p-3.5 rounded-2xl bg-white border-2 border-slate-900 space-y-2 text-xs font-bold shadow-[2px_2px_0px_0px_#0f172a] group/trade">
+              <div class="flex items-center justify-between pb-1.5 border-b border-slate-200 text-slate-500 uppercase tracking-wider text-[10px]">
+                <span class="tracking-wide">Knowledge Trade</span>
+                <span class="flex items-center gap-1.5 text-emerald-700 font-black">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span>Active Cycle</span>
+                </span>
+              </div>
+              
+              <div class="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-1.5 sm:gap-2 relative">
+                <div class="min-w-0 w-full trade-pill-left transition-transform duration-300 p-2 rounded-xl bg-[#dcfce7] border border-slate-900 text-slate-900 text-center flex flex-col justify-center">
+                  <div class="text-[9px] font-black text-emerald-800 uppercase tracking-wider">You Teach</div>
+                  <div class="font-extrabold truncate text-[11px] leading-tight mt-0.5" title="{{ match.you_teach.name }}">{{ match.you_teach.name }}</div>
+                  <div class="text-[9px] text-slate-500 font-bold truncate mt-0.5">{{ match.you_teach.level }}</div>
+                </div>
+
+                <!-- Animated Swap Icon in Center -->
+                <div class="w-7 h-7 rounded-full bg-white border border-slate-900 flex items-center justify-center shrink-0 shadow-[1px_1px_0px_0px_#0f172a] trade-swap-icon transition-transform duration-500 group-hover/trade:rotate-180 z-10">
+                  <span class="text-xs font-black">⇄</span>
+                </div>
+
+                <div class="min-w-0 w-full trade-pill-right transition-transform duration-300 p-2 rounded-xl bg-[#f3e8ff] border border-slate-900 text-slate-900 text-center flex flex-col justify-center">
+                  <div class="text-[9px] font-black text-purple-800 uppercase tracking-wider">They Teach</div>
+                  <div class="font-extrabold truncate text-[11px] leading-tight mt-0.5" title="{{ match.they_teach.name }}">{{ match.they_teach.name }}</div>
+                  <div class="text-[9px] text-slate-500 font-bold truncate mt-0.5">{{ match.they_teach.level }}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Schedule Synergy -->
+            <div class="text-xs font-bold text-slate-700 space-y-1">
+              <div><strong>Common Days:</strong> {{ match.shared_days|join(', ') if match.shared_days else 'Flexible' }}</div>
+              <div><strong>Time Slots:</strong> {{ match.shared_slots|join(', ') if match.shared_slots else 'To be coordinated' }}</div>
+            </div>
+          </div>
+
+          <!-- Bottom Action with Circular Arrow Button -->
+          <div class="flex items-center justify-between pt-3 border-t border-slate-900/30">
+            <span class="text-xs font-black text-slate-900">Propose Skill Barter</span>
+            <button onclick="openSwapModal('{{ match.partner._id }}', '{{ match.partner.name }}', '{{ match.you_teach.name }}', '{{ match.they_teach.name }}')" class="circle-arrow-btn">
+              <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="neo-card p-12 bg-white text-center space-y-3">
+        <h3 class="font-display font-black text-lg text-slate-900">No bilateral match for your current skills</h3>
+        <p class="text-xs font-semibold text-slate-600">Check our Circular 3-Way Pods below!</p>
+        <button onclick="switchTab('pods')" class="btn-neo-dark text-xs">View Circular Pods</button>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- TAB 2: Circular Group Pods -->
+  <div id="tab-content-pods" class="hidden space-y-6">
+    {% if group_pods %}
+      {% for pod in group_pods %}
+      <div class="card-yellow p-6 sm:p-8 space-y-6">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="w-10 h-10 rounded-2xl bg-white border-2 border-slate-900 flex items-center justify-center font-display font-black text-lg shadow-[2px_2px_0px_0px_#0f172a]">
+              🔄
+            </span>
+            <div>
+              <h3 class="font-display font-black text-xl text-slate-900">{{ pod.type_name }}</h3>
+              <div class="text-xs font-bold text-slate-700">Closed Cycle: {{ pod.description }}</div>
+            </div>
+          </div>
+
+          <span class="px-3 py-1 rounded-full bg-white border-2 border-slate-900 font-display font-black text-sm text-slate-900 shadow-[1.5px_1.5px_0px_0px_#0f172a]">
+            {{ pod.pod_score }}% Synergy
+          </span>
+        </div>
+
+        <!-- Flow Steps with Circular Sequencer Animation -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 circular-pod-loop-container">
+          {% for step in pod.steps %}
+          <div class="pod-step-item card-mint p-4 space-y-2 text-xs font-bold shadow-[2px_2px_0px_0px_#0f172a] transition-all duration-300">
+            <div class="flex items-center justify-between text-[10px] uppercase font-black text-slate-500">
+              <span class="step-num-bubble px-2 py-0.5 rounded-full bg-[#fef08a] border border-slate-900 text-slate-900 font-black">Step 0{{ step.step_num }}</span>
+              <span>{{ step.level }}</span>
+            </div>
+            <div class="text-sm font-black text-slate-900 flex items-center justify-between">
+              <span>{{ step.teacher.name.split()[0] }} &rarr; {{ step.student.name.split()[0] }}</span>
+              <span class="step-pulse-arrow text-slate-400 font-black">➔</span>
+            </div>
+            <div class="p-2 rounded-xl bg-white border border-slate-900 text-indigo-900 font-extrabold truncate">
+              {{ step.skill_name }}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <form action="{{ url_for('create_exchange') }}" method="POST">
+          <input type="hidden" name="type" value="pod">
+          <input type="hidden" name="pod_name" value="{{ pod.type_name }}">
+          <input type="hidden" name="loop_description" value="{{ pod.description }}">
+          {% for m in pod.members %}
+          <input type="hidden" name="members" value="{{ m._id }}">
+          {% endfor %}
+          <button type="submit" class="btn-neo-dark text-xs w-full py-3">
+            Form & Launch This Exchange Pod
+          </button>
+        </form>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="neo-card p-10 bg-white text-center text-xs font-semibold text-slate-500">
+        No 3-way circular pods formed yet. Add more offered or wanted skills to trigger cycles!
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- TAB 3: Theory & Explanations -->
+  <div id="tab-content-theory" class="hidden neo-card p-8 bg-white space-y-6">
+    <h2 class="font-display font-black text-2xl text-slate-900">How the SkillSwap DNA Matching Works</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs font-medium text-slate-700 leading-relaxed">
+      <div class="p-5 rounded-2xl bg-[#dcfce7] border-2 border-slate-900 space-y-2 shadow-[2px_2px_0px_0px_#0f172a]">
+        <h4 class="font-display font-black text-base text-slate-900">1. Direct 2-Person Reciprocal Matching</h4>
+        <p>When Student A knows Python and wants UI Design, and Student B knows UI Design and wants Python, the matching engine calculates a weighted compatibility score based on reciprocity (50%), proficiency tier satisfaction (25%), and shared available time slots (25%).</p>
+      </div>
+      <div class="p-5 rounded-2xl bg-[#f3e8ff] border-2 border-slate-900 space-y-2 shadow-[2px_2px_0px_0px_#0f172a]">
+        <h4 class="font-display font-black text-base text-slate-900">2. Circular 3-Way Exchange Pods</h4>
+        <p>When two students cannot exchange directly, SkillSwap DNA discovers directed cycle loops: Student A &rarr; Student B &rarr; Student C &rarr; Student A. Everyone teaches 1 skill and learns 1 skill without money.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Propose Swap Modal (Neo-Brutalist Style with Live Animated Barter Stage) -->
+<div id="swap-modal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden items-center justify-center p-4">
+  <div class="neo-card max-w-lg w-full p-6 sm:p-7 bg-white border-2 border-slate-900 shadow-[6px_6px_0px_0px_#0f172a] space-y-4 max-h-[92vh] overflow-y-auto">
+    
+    <!-- Modal Header -->
+    <div class="flex items-center justify-between border-b-2 border-slate-900 pb-3">
+      <div class="flex items-center gap-2">
+        <span class="text-xl">🤝</span>
+        <h3 class="font-display font-black text-lg text-slate-900">Propose Skill Barter</h3>
+      </div>
+      <button onclick="closeSwapModal()" class="w-8 h-8 rounded-full border border-slate-900 bg-slate-100 hover:bg-slate-200 flex items-center justify-center font-bold">
+        ✕
+      </button>
+    </div>
+
+    <!-- Live Animated Skill Barter Stage -->
+    <div class="p-3.5 sm:p-4 rounded-2xl bg-[#faf8f5] border-2 border-slate-900 shadow-[2px_2px_0px_0px_#0f172a] space-y-2.5 relative overflow-hidden">
+      
+      <!-- Top Stage Pill Indicator -->
+      <div class="flex items-center justify-between text-[10px] font-black uppercase text-slate-500">
+        <span class="flex items-center gap-1.5 text-slate-900">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span>Live Barter Circuit</span>
+        </span>
+        <button type="button" onclick="triggerSwapAnimation()" class="px-2.5 py-0.5 rounded-full bg-[#fef08a] border border-slate-900 text-slate-900 hover:bg-[#fde047] transition-all flex items-center gap-1 font-extrabold shadow-[1px_1px_0px_0px_#0f172a]">
+          <span>Re-Swap</span> 🔄
+        </button>
+      </div>
+
+      <!-- The Two Swapping Skill Badges Stage -->
+      <div class="relative py-2 px-1 flex items-center justify-between gap-2.5 min-h-[85px]">
+        
+        <!-- Left Badge (You Offer) -->
+        <div id="swap-anim-badge-left" class="flex-1 card-mint p-2.5 rounded-2xl border-2 border-slate-900 text-center space-y-1 shadow-[2px_2px_0px_0px_#0f172a] transition-all z-10">
+          <div class="text-[9px] font-extrabold uppercase text-emerald-800">You Teach ➔</div>
+          <div id="swap-anim-text-left" class="font-display font-black text-xs text-slate-900 truncate">
+            Skill You Teach
+          </div>
+        </div>
+
+        <!-- Center Animated Exchange Hub with Dashed Line & Orbiting Arrows -->
+        <div class="shrink-0 flex flex-col items-center justify-center relative z-20">
+          <button type="button" onclick="triggerSwapAnimation()" id="swap-hub-btn" class="w-9 h-9 rounded-full bg-white border-2 border-slate-900 shadow-[2px_2px_0px_0px_#0f172a] flex items-center justify-center text-sm font-black hover:rotate-180 transition-transform duration-500">
+            ⇄
+          </button>
+          <span class="text-[8px] font-extrabold text-slate-600 mt-0.5 uppercase tracking-tight">100% Trade</span>
+        </div>
+
+        <!-- Right Badge (They Offer) -->
+        <div id="swap-anim-badge-right" class="flex-1 card-purple p-2.5 rounded-2xl border-2 border-slate-900 text-center space-y-1 shadow-[2px_2px_0px_0px_#0f172a] transition-all z-10">
+          <div class="text-[9px] font-extrabold uppercase text-purple-800">➔ They Teach</div>
+          <div id="swap-anim-text-right" class="font-display font-black text-xs text-slate-900 truncate">
+            Skill They Teach
+          </div>
+        </div>
+
+        <!-- Background Animated Dashed Flow Line -->
+        <svg class="absolute inset-0 w-full h-full pointer-events-none z-0" xmlns="http://www.w3.org/2000/svg">
+          <line x1="20%" y1="50%" x2="80%" y2="50%" stroke="#0f172a" stroke-width="2" stroke-dasharray="6 6" class="animate-dash-forward" opacity="0.3" />
+        </svg>
+
+      </div>
+
+      <!-- Lock-in Stamp Alert (Appears after swap animation) -->
+      <div id="swap-stamp-container" class="hidden text-center py-0.5">
+        <span class="inline-block px-3 py-1 rounded-full bg-[#dcfce7] border-2 border-slate-900 text-[11px] font-black text-slate-900 shadow-[2px_2px_0px_0px_#0f172a] animate-stamp-lock">
+          🧬 Reciprocal Barter Synchronized!
+        </span>
+      </div>
+
+    </div>
+
+    <!-- Swap Form Inputs -->
+    <form action="{{ url_for('create_exchange') }}" method="POST" class="space-y-3.5 text-xs font-bold text-slate-700">
+      <input type="hidden" name="type" value="direct">
+      <input type="hidden" id="modal-partner-id" name="partner_id">
+      
+      <div>
+        <label class="block mb-1 text-slate-900">Exchange Partner</label>
+        <input type="text" id="modal-partner-name" readonly class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 border-2 border-slate-900 text-slate-900 font-extrabold">
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block mb-1 text-emerald-800">You Offer (To Teach)</label>
+          <input type="text" id="modal-initiator-offers" name="initiator_offers" class="w-full px-3 py-2 rounded-xl bg-white border-2 border-slate-900 text-slate-900 focus:outline-none">
+        </div>
+        <div>
+          <label class="block mb-1 text-indigo-800">They Offer (To Learn)</label>
+          <input type="text" id="modal-recipient-offers" name="recipient_offers" class="w-full px-3 py-2 rounded-xl bg-white border-2 border-slate-900 text-slate-900 focus:outline-none">
+        </div>
+      </div>
+
+      <div>
+        <label class="block mb-1 text-slate-900">Proposed Schedule / Frequency</label>
+        <input type="text" name="scheduled_time" value="Twice a week (1 hr each)" class="w-full px-3 py-2 rounded-xl bg-white border-2 border-slate-900 text-slate-900 focus:outline-none">
+      </div>
+
+      <div>
+        <label class="block mb-1 text-slate-900">Location / Platform</label>
+        <input type="text" name="location" value="Campus Library Study Room / Discord" class="w-full px-3 py-2 rounded-xl bg-white border-2 border-slate-900 text-slate-900 focus:outline-none">
+      </div>
+
+      <div>
+        <label class="block mb-1 text-slate-900">Personal Note</label>
+        <textarea name="notes" rows="2" class="w-full px-3 py-2 rounded-xl bg-white border-2 border-slate-900 text-slate-900 focus:outline-none" placeholder="Hey! Looking forward to trading knowledge and leveling up together."></textarea>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2 border-t-2 border-slate-900">
+        <button type="button" onclick="closeSwapModal()" class="btn-neo-outline text-xs py-2 px-4">Cancel</button>
+        <button type="submit" class="btn-neo-dark text-xs py-2 px-6">Send Request</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function switchTab(tabId) {
+    const tabs = ['direct', 'pods', 'theory'];
+    tabs.forEach(t => {
+      document.getElementById('tab-content-' + t).classList.add('hidden');
+      const btn = document.getElementById('tab-btn-' + t);
+      btn.className = 'px-4 py-2 rounded-full border-2 border-slate-900 bg-white hover:bg-slate-100 text-slate-900 font-extrabold text-xs shadow-[2px_2px_0px_0px_#0f172a] transition-all';
+    });
+
+    document.getElementById('tab-content-' + tabId).classList.remove('hidden');
+    const activeBtn = document.getElementById('tab-btn-' + tabId);
+    activeBtn.className = 'px-4 py-2 rounded-full border-2 border-slate-900 bg-slate-900 text-white font-extrabold text-xs shadow-[2px_2px_0px_0px_rgba(0,0,0,0.3)] transition-all';
+  }
+
+  function openSwapModal(partnerId, partnerName, youTeach, theyTeach) {
+    document.getElementById('modal-partner-id').value = partnerId;
+    document.getElementById('modal-partner-name').value = partnerName;
+    document.getElementById('modal-initiator-offers').value = youTeach;
+    document.getElementById('modal-recipient-offers').value = theyTeach;
+
+    // Update animated stage texts
+    const badgeLeftText = document.getElementById('swap-anim-text-left');
+    const badgeRightText = document.getElementById('swap-anim-text-right');
+    if (badgeLeftText) badgeLeftText.innerText = youTeach;
+    if (badgeRightText) badgeRightText.innerText = theyTeach;
+
+    const modal = document.getElementById('swap-modal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+
+    // Trigger initial swap animation with short delay
+    setTimeout(() => {
+      triggerSwapAnimation();
+    }, 250);
+  }
+
+  function closeSwapModal() {
+    const modal = document.getElementById('swap-modal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    const stamp = document.getElementById('swap-stamp-container');
+    if (stamp) stamp.classList.add('hidden');
+  }
+
+  // Interactive Swap Animation Trigger
+  function triggerSwapAnimation() {
+    const badgeLeft = document.getElementById('swap-anim-badge-left');
+    const badgeRight = document.getElementById('swap-anim-badge-right');
+    const hubBtn = document.getElementById('swap-hub-btn');
+    const stamp = document.getElementById('swap-stamp-container');
+
+    if (!badgeLeft || !badgeRight) return;
+
+    badgeLeft.classList.remove('animate-swap-A');
+    badgeRight.classList.remove('animate-swap-B');
+    if (hubBtn) hubBtn.classList.remove('animate-barter-spin-fast');
+    if (stamp) stamp.classList.add('hidden');
+
+    void badgeLeft.offsetWidth; // Force reflow
+
+    badgeLeft.classList.add('animate-swap-A');
+    badgeRight.classList.add('animate-swap-B');
+    if (hubBtn) hubBtn.classList.add('animate-barter-spin-fast');
+
+    setTimeout(() => {
+      badgeLeft.classList.remove('animate-swap-A');
+      badgeRight.classList.remove('animate-swap-B');
+      if (stamp) stamp.classList.remove('hidden');
+    }, 850);
+  }
+
+  // Synchronize live input typing and initialize continuous circular pod loop
+  document.addEventListener('DOMContentLoaded', function() {
+    const initOfferInput = document.getElementById('modal-initiator-offers');
+    const recipOfferInput = document.getElementById('modal-recipient-offers');
+    
+    if (initOfferInput) {
+      initOfferInput.addEventListener('input', function() {
+        const textEl = document.getElementById('swap-anim-text-left');
+        if (textEl) textEl.innerText = this.value.trim() || 'You Teach';
+      });
+    }
+
+    if (recipOfferInput) {
+      recipOfferInput.addEventListener('input', function() {
+        const textEl = document.getElementById('swap-anim-text-right');
+        if (textEl) textEl.innerText = this.value.trim() || 'They Teach';
+      });
+    }
+
+    // Continuous Circular 3-Way Pod Loop Sequencer
+    const podContainers = document.querySelectorAll('.circular-pod-loop-container');
+    podContainers.forEach(container => {
+      const steps = container.querySelectorAll('.pod-step-item');
+      if (steps.length > 0) {
+        let activeIdx = 0;
+        steps[0].classList.add('pod-step-active');
+
+        setInterval(() => {
+          steps.forEach(s => s.classList.remove('pod-step-active'));
+          activeIdx = (activeIdx + 1) % steps.length;
+          steps[activeIdx].classList.add('pod-step-active');
+        }, 1600);
+      }
+    });
+  });
+</script>
+{% endblock %}

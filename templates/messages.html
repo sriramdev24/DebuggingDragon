@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}Messages | SkillSwap DNA{% endblock %}
+
+{% block content %}
+<div class="neo-card bg-white rounded-3xl border-2 border-slate-900 overflow-hidden h-[740px] flex flex-col md:flex-row shadow-[4px_4px_0px_0px_#0f172a]">
+
+  <!-- Left: Conversation List -->
+  <div class="w-full md:w-80 lg:w-96 border-r-2 border-slate-900 bg-[#faf8f5] flex flex-col shrink-0">
+    <div class="p-4 border-b-2 border-slate-900 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="text-lg">💬</span>
+        <h2 class="font-display font-black text-base text-slate-900">Peer Chats</h2>
+      </div>
+      <span class="px-2 py-0.5 rounded-full bg-white border border-slate-900 text-xs font-bold">{{ conversations|length }} chats</span>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-2 space-y-1">
+      {% for conv in conversations %}
+      {% set partner = conv.partner %}
+      {% if partner %}
+      <a href="{{ url_for('messages', peer_id=partner._id) }}" class="flex items-center gap-3 p-3 rounded-2xl transition-all block border-2 border-slate-900 {% if active_peer and active_peer._id == partner._id %}bg-[#fef08a] shadow-[2px_2px_0px_0px_#0f172a]{% else %}bg-white hover:bg-[#fffbeb] text-slate-800{% endif %}">
+        <div class="relative shrink-0">
+          <img src="{{ partner.avatar }}" alt="{{ partner.name }}" class="w-11 h-11 rounded-full object-cover border-2 border-slate-900">
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center justify-between">
+            <span class="font-extrabold text-xs text-slate-900 truncate">{{ partner.name }}</span>
+            <span class="text-[10px] text-slate-500 font-semibold">{{ conv.timestamp }}</span>
+          </div>
+          <p class="text-[11px] text-slate-600 truncate mt-0.5 font-medium">{{ conv.last_message }}</p>
+        </div>
+      </a>
+      {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Right: Active Chat Thread -->
+  <div class="flex-1 flex flex-col bg-white">
+    {% if active_peer %}
+    <!-- Chat Header -->
+    <div class="p-4 border-b-2 border-slate-900 bg-[#faf8f5] flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <img src="{{ active_peer.avatar }}" alt="{{ active_peer.name }}" class="w-10 h-10 rounded-full object-cover border-2 border-slate-900">
+        <div>
+          <h3 class="font-display font-black text-sm text-slate-900">{{ active_peer.name }}</h3>
+          <div class="text-[11px] font-bold text-slate-600">{{ active_peer.department }} &bull; ⭐ {{ active_peer.rating }}</div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button onclick="openSwapModal('{{ active_peer._id }}', '{{ active_peer.name }}', 'Skill Exchange', 'Reciprocal Swap')" class="btn-neo-dark text-xs py-1.5 px-3">
+          Propose Barter
+        </button>
+      </div>
+    </div>
+
+    <!-- Match Banner -->
+    {% if peer_match_info %}
+    <div class="p-2.5 bg-[#fef08a] border-b-2 border-slate-900 text-xs font-bold text-slate-900 flex items-center justify-between px-6">
+      <span><strong>{{ peer_match_info.compatibility_score }}% Match:</strong> You teach {{ peer_match_info.you_teach.name }} &harr; They teach {{ peer_match_info.they_teach.name }}</span>
+      <button onclick="openSwapModal('{{ active_peer._id }}', '{{ active_peer.name }}', '{{ peer_match_info.you_teach.name }}', '{{ peer_match_info.they_teach.name }}')" class="underline font-black">
+        Start Swap
+      </button>
+    </div>
+    {% endif %}
+
+    <!-- Messages Flow -->
+    <div class="flex-1 p-6 overflow-y-auto space-y-4 bg-[#faf8f5]">
+      {% for msg in chat_messages %}
+        {% if msg.sender_id == current_user._id %}
+        <!-- Outgoing (Mint Bubble with Black Border) -->
+        <div class="flex justify-end">
+          <div class="max-w-md space-y-1">
+            <div class="p-3.5 rounded-2xl bg-[#dcfce7] border-2 border-slate-900 text-slate-900 text-xs font-bold shadow-[2px_2px_0px_0px_#0f172a]">
+              {{ msg.text }}
+            </div>
+            <div class="text-[10px] text-slate-500 text-right font-semibold">{{ msg.created_at }}</div>
+          </div>
+        </div>
+        {% else %}
+        <!-- Incoming (Lavender Bubble with Black Border) -->
+        <div class="flex justify-start items-start gap-2.5">
+          <img src="{{ active_peer.avatar }}" class="w-7 h-7 rounded-full object-cover border border-slate-900 shrink-0 mt-1">
+          <div class="max-w-md space-y-1">
+            <div class="p-3.5 rounded-2xl bg-[#f3e8ff] border-2 border-slate-900 text-slate-900 text-xs font-bold shadow-[2px_2px_0px_0px_#0f172a]">
+              {{ msg.text }}
+            </div>
+            <div class="text-[10px] text-slate-500 font-semibold">{{ msg.created_at }}</div>
+          </div>
+        </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    <!-- Message Input -->
+    <div class="p-4 border-t-2 border-slate-900 bg-white">
+      <form action="{{ url_for('send_message') }}" method="POST" class="flex items-center gap-2">
+        <input type="hidden" name="receiver_id" value="{{ active_peer._id }}">
+        <input type="text" name="text" required placeholder="Type message to coordinate swap times..." class="flex-1 px-4 py-2.5 rounded-full bg-[#faf8f5] border-2 border-slate-900 text-xs font-bold text-slate-900 placeholder-slate-400 focus:outline-none">
+        <button type="submit" class="btn-neo-dark text-xs py-2 px-5">Send</button>
+      </form>
+    </div>
+    {% else %}
+    <div class="flex-1 flex flex-col items-center justify-center p-6 text-center text-xs font-semibold text-slate-500">
+      Select a peer to start messaging.
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+
+<!-- Propose Swap Modal -->
+<div id="swap-modal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden items-center justify-center p-4">
+  <div class="neo-card max-w-lg w-full p-6 sm:p-8 bg-white border-2 border-slate-900 shadow-[6px_6px_0px_0px_#0f172a] space-y-4">
+    <div class="flex items-center justify-between border-b-2 border-slate-900 pb-3">
+      <h3 class="font-display font-black text-lg text-slate-900">Propose Skill Barter</h3>
+      <button onclick="closeSwapModal()" class="w-8 h-8 rounded-full border border-slate-900 bg-slate-100 flex items-center justify-center font-bold">✕</button>
+    </div>
+
+    <form action="{{ url_for('create_exchange') }}" method="POST" class="space-y-4 text-xs font-bold text-slate-700">
+      <input type="hidden" name="type" value="direct">
+      <input type="hidden" id="modal-partner-id" name="partner_id">
+      
+      <div>
+        <label class="block mb-1 text-slate-900">Exchange Partner</label>
+        <input type="text" id="modal-partner-name" readonly class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 border-2 border-slate-900 text-slate-900 font-extrabold">
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block mb-1 text-emerald-800">You Offer (To Teach)</label>
+          <input type="text" id="modal-initiator-offers" name="initiator_offers" class="w-full px-3 py-2 rounded-xl bg-white border-2 border-slate-900 text-slate-900">
+        </div>
+        <div>
+          <label class="block mb-1 text-indigo-800">They Offer (To Learn)</label>
+          <input type="text" id="modal-recipient-offers" name="recipient_offers" class="w-full px-3 py-2 rounded-xl bg-white border-2 border-slate-900 text-slate-900">
+        </div>
+      </div>
+
+      <div>
+        <label class="block mb-1 text-slate-900">Schedule / Frequency</label>
+        <input type="text" name="scheduled_time" value="Twice a week (1 hr each)" class="w-full px-3 py-2 rounded-xl bg-white border-2 border-slate-900 text-slate-900">
+      </div>
+
+      <div>
+        <label class="block mb-1 text-slate-900">Location / Platform</label>
+        <input type="text" name="location" value="Campus Library Study Room / Discord" class="w-full px-3 py-2 rounded-xl bg-white border-2 border-slate-900 text-slate-900">
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2 border-t-2 border-slate-900">
+        <button type="button" onclick="closeSwapModal()" class="btn-neo-outline text-xs py-2 px-4">Cancel</button>
+        <button type="submit" class="btn-neo-dark text-xs py-2 px-6">Send Request</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function openSwapModal(partnerId, partnerName, youTeach, theyTeach) {
+    document.getElementById('modal-partner-id').value = partnerId;
+    document.getElementById('modal-partner-name').value = partnerName;
+    document.getElementById('modal-initiator-offers').value = youTeach;
+    document.getElementById('modal-recipient-offers').value = theyTeach;
+    const modal = document.getElementById('swap-modal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+  }
+
+  function closeSwapModal() {
+    const modal = document.getElementById('swap-modal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+</script>
+{% endblock %}

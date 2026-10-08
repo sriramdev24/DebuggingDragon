@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}SkillSwap DNA | Campus Skill Barter Network{% endblock %}</title>
+  
+  <!-- Google Fonts: Space Grotesk & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN with configuration -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: '#0f172a',
+            cream: '#faf8f5',
+            pastel: {
+              mint: '#dcfce7',
+              purple: '#f3e8ff',
+              yellow: '#fef08a',
+              blue: '#e0f2fe',
+              pink: '#ffe4e6',
+              coral: '#fecdd3'
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            display: ['"Space Grotesk"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Vis.js for Network Graph -->
+  <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Neo-Brutalist Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+</head>
+<body class="bg-[#faf8f5] text-slate-900 flex flex-col min-h-screen selection:bg-[#fef08a] selection:text-slate-900">
+
+  <!-- Top Navigation Header (Clean Bar with Logo, Search, Switcher & Profile) -->
+  <header class="sticky top-0 z-40 bg-[#faf8f5]/95 backdrop-blur-md border-b-2 border-slate-900 py-3">
+    <div class="w-full px-4 sm:px-6 lg:px-8">
+      
+      <!-- Top Row: Brand, Search Bar, Profile Action -->
+      <div class="flex items-center justify-between gap-3 sm:gap-4">
+        
+        <!-- Left: Mobile Menu Toggle + Logo -->
+        <div class="flex items-center gap-2.5 sm:gap-3 shrink-0">
+          <button id="sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle navigation" class="lg:hidden p-2 rounded-xl bg-white border-2 border-slate-900 text-slate-900 shadow-[2px_2px_0px_0px_#0f172a] hover:bg-slate-100 transition-all active:translate-x-0.5 active:translate-y-0.5">
+            <i data-lucide="menu" class="w-4 h-4"></i>
+          </button>
+
+          <a href="{{ url_for('index') }}" class="flex items-center gap-2.5 group shrink-0">
+            <div class="w-10 h-10 rounded-2xl bg-[#fef08a] border-2 border-slate-900 flex items-center justify-center font-display font-extrabold text-xl shadow-[2px_2px_0px_0px_#0f172a] group-hover:rotate-6 transition-transform">
+              🧬
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="font-display font-black text-xl sm:text-2xl tracking-tight text-slate-900">SkillSwap</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-[#f3e8ff] border border-slate-900 shadow-[1.5px_1.5px_0px_0px_#0f172a]">DNA</span>
+            </div>
+          </a>
+        </div>
+
+        <!-- Center Search Bar (Screenshot 2: "Search any course") -->
+        <form action="{{ url_for('directory') }}" method="GET" class="hidden md:flex items-center relative flex-1 max-w-md mx-2 lg:mx-6">
+          <i data-lucide="search" class="w-4 h-4 text-slate-600 absolute left-4"></i>
+          <input type="text" name="q" placeholder="Search any skill, mentor or peer..." class="w-full pl-11 pr-5 py-2.5 rounded-full bg-white border-2 border-slate-900 text-xs font-medium text-slate-900 placeholder-slate-500 shadow-[2px_2px_0px_0px_#0f172a] focus:outline-none focus:translate-x-[1px] focus:translate-y-[1px] focus:shadow-none transition-all">
+        </form>
+
+        <!-- Right Side: DB Pill, User Switcher, Profile Button -->
+        <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+          
+          <!-- Cloud Mongo status pill -->
+          <div class="hidden xl:flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border-2 border-slate-900 {% if db_status.is_cloud %}bg-[#dcfce7]{% else %}bg-[#f3e8ff]{% endif %} shadow-[1.5px_1.5px_0px_0px_#0f172a]">
+            <span class="w-2 h-2 rounded-full {% if db_status.is_cloud %}bg-emerald-600{% else %}bg-indigo-600{% endif %}"></span>
+            <span>{% if db_status.is_cloud %}MongoDB Cloud{% else %}Local DB{% endif %}</span>
+          </div>
+
+          {% if current_user %}
+          <!-- Logged In: Quick Identity Switcher (Neo-Pill) -->
+          <div class="relative group">
+            <button class="flex items-center gap-2 px-3 sm:px-3.5 py-1.5 rounded-full bg-[#fef08a] border-2 border-slate-900 hover:bg-[#fde047] text-xs font-extrabold text-slate-900 shadow-[2px_2px_0px_0px_#0f172a] transition-all">
+              <i data-lucide="arrow-left-right" class="w-3.5 h-3.5"></i>
+              <span class="hidden sm:inline">Role:</span>
+              <span>{{ current_user.name.split()[0] }}</span>
+              <i data-lucide="chevron-down" class="w-3 h-3"></i>
+            </button>
+
+            <!-- Dropdown Menu -->
+            <div class="absolute right-0 mt-2 w-64 bg-white border-2 border-slate-900 rounded-2xl shadow-[4px_4px_0px_0px_#0f172a] p-2 hidden group-hover:block hover:block z-50">
+              <div class="px-2 py-1 text-[10px] font-extrabold text-slate-500 uppercase tracking-wider border-b border-slate-200 mb-1">
+                Switch Campus Student
+              </div>
+              <div class="max-h-64 overflow-y-auto space-y-1">
+                {% for u in all_users %}
+                <a href="{{ url_for('switch_user', user_id=u._id) }}" class="flex items-center gap-2.5 p-2 rounded-xl text-xs hover:bg-[#fef9c3] transition-colors {% if current_user and current_user._id == u._id %}bg-[#fef08a] font-bold border border-slate-900{% else %}text-slate-800 font-medium{% endif %}">
+                  <img src="{{ u.avatar }}" alt="{{ u.name }}" class="w-7 h-7 rounded-full object-cover border border-slate-900">
+                  <div class="flex-1 min-w-0">
+                    <div class="truncate">{{ u.name }}</div>
+                    <div class="text-[10px] text-slate-500 truncate">{{ u.department }}</div>
+                  </div>
+                  {% if current_user and current_user._id == u._id %}
+                  <i data-lucide="check" class="w-3.5 h-3.5 text-slate-900"></i>
+                  {% endif %}
+                </a>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+
+          <!-- User Profile & Account Dropdown -->
+          <div class="relative group">
+            <button class="flex items-center gap-2 px-3 sm:px-3.5 py-1.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-[2px_2px_0px_0px_rgba(0,0,0,0.3)] transition-all">
+              <img src="{{ current_user.avatar }}" alt="{{ current_user.name }}" class="w-5 h-5 rounded-full object-cover border border-white">
+              <span class="hidden sm:inline">{{ current_user.karma_points }} pts</span>
+              <i data-lucide="chevron-down" class="w-3 h-3 text-slate-400"></i>
+            </button>
+
+            <!-- User Menu Dropdown -->
+            <div class="absolute right-0 mt-2 w-52 bg-white border-2 border-slate-900 rounded-2xl shadow-[4px_4px_0px_0px_#0f172a] p-2 hidden group-hover:block hover:block z-50 text-xs font-bold">
+              <div class="px-3 py-2 border-b border-slate-200">
+                <div class="text-slate-900 font-extrabold truncate">{{ current_user.name }}</div>
+                <div class="text-[10px] text-slate-500 truncate">{{ current_user.email }}</div>
+              </div>
+              <div class="py-1 space-y-0.5">
+                <a href="{{ url_for('profile') }}" class="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-slate-100 text-slate-800">
+                  <i data-lucide="user" class="w-3.5 h-3.5"></i>
+                  <span>My Skill DNA</span>
+                </a>
+                <a href="{{ url_for('exchanges') }}" class="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-slate-100 text-slate-800">
+                  <i data-lucide="repeat" class="w-3.5 h-3.5"></i>
+                  <span>My Swaps &amp; Pods</span>
+                </a>
+                <a href="{{ url_for('messages') }}" class="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-slate-100 text-slate-800">
+                  <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
+                  <span>Messages</span>
+                </a>
+              </div>
+              <div class="pt-1 border-t border-slate-200">
+                <a href="{{ url_for('logout') }}" class="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-rose-50 text-rose-600">
+                  <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+                  <span>Sign Out</span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {% else %}
+          <!-- Guest / Not Logged In State (Clean Neo-Brutalist Buttons) -->
+          <!-- Quick 1-Click Demo Dropdown -->
+          <div class="relative group">
+            <button class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#f3e8ff] border-2 border-slate-900 hover:bg-[#e9d5ff] text-xs font-extrabold text-slate-900 shadow-[1.5px_1.5px_0px_0px_#0f172a] transition-all">
+              <span>⚡ Demo</span>
+              <i data-lucide="chevron-down" class="w-3 h-3"></i>
+            </button>
+            <div class="absolute right-0 mt-2 w-60 bg-white border-2 border-slate-900 rounded-2xl shadow-[4px_4px_0px_0px_#0f172a] p-2 hidden group-hover:block hover:block z-50">
+              <div class="px-2 py-1 text-[10px] font-extrabold text-slate-500 uppercase tracking-wider border-b border-slate-200 mb-1">
+                Instant 1-Click Demo Login
+              </div>
+              <div class="max-h-56 overflow-y-auto space-y-1">
+                {% for u in all_users[:5] %}
+                <a href="{{ url_for('demo_login', user_id=u._id) }}" class="demo-login-btn flex items-center gap-2 p-2 rounded-xl text-xs hover:bg-[#fef9c3] transition-colors text-slate-800 font-medium">
+                  <img src="{{ u.avatar }}" alt="{{ u.name }}" class="w-6 h-6 rounded-full object-cover border border-slate-900">
+                  <div class="flex-1 min-w-0">
+                    <div class="font-bold truncate text-[11px]">{{ u.name }}</div>
+                    <div class="text-[9px] text-slate-500 truncate">{{ u.skills_offered[0].name if u.skills_offered else '' }}</div>
+                  </div>
+                  <i data-lucide="arrow-right" class="w-3 h-3 text-slate-500"></i>
+                </a>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Log In Button -->
+          <a href="{{ url_for('login') }}" class="px-3.5 sm:px-4 py-1.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs shadow-[2px_2px_0px_0px_rgba(0,0,0,0.3)] transition-all">
+            Log In
+          </a>
+
+          <!-- Sign Up Button -->
+          <a href="{{ url_for('register') }}" class="px-3.5 sm:px-4 py-1.5 rounded-full bg-[#fef08a] hover:bg-[#fde047] text-slate-900 border-2 border-slate-900 font-extrabold text-xs shadow-[2px_2px_0px_0px_#0f172a] transition-all">
+            Sign Up
+          </a>
+          {% endif %}
+
+        </div>
+
+      </div>
+
+    </div>
+  </header>
+
+  <!-- App Layout Container: Left Sidebar + Main Area -->
+  <div class="flex-1 flex w-full">
+    
+    <!-- Mobile Drawer Backdrop Overlay -->
+    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 hidden lg:hidden transition-opacity"></div>
+
+    <!-- Separate Campus Sidebar -->
+    <aside id="app-sidebar" class="fixed lg:sticky top-0 lg:top-[66px] left-0 h-full lg:h-[calc(100vh-66px)] z-50 lg:z-30 w-72 lg:w-64 bg-white lg:bg-[#faf8f5] border-r-2 border-slate-900 flex flex-col justify-between shrink-0 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out shadow-2xl lg:shadow-none overflow-y-auto">
+      
+      <!-- Mobile Sidebar Header -->
+      <div class="lg:hidden p-4 border-b-2 border-slate-900 flex items-center justify-between bg-[#fef08a]">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-white border-2 border-slate-900 flex items-center justify-center font-bold text-sm shadow-[1.5px_1.5px_0px_0px_#0f172a]">
+            🧬
+          </div>
+          <span class="font-display font-black text-lg text-slate-900">SkillSwap DNA</span>
+        </div>
+        <button onclick="toggleSidebar()" aria-label="Close menu" class="p-1.5 rounded-xl bg-white border-2 border-slate-900 hover:bg-slate-100 shadow-[1.5px_1.5px_0px_0px_#0f172a]">
+          <i data-lucide="x" class="w-4 h-4 text-slate-900"></i>
+        </button>
+      </div>
+
+      <!-- Sidebar Navigation Body -->
+      <div class="p-4 space-y-5 flex-1">
+        
+        <!-- Mobile Search Bar (Only shown on small screens) -->
+        <form action="{{ url_for('directory') }}" method="GET" class="md:hidden relative">
+          <i data-lucide="search" class="w-4 h-4 text-slate-500 absolute left-3.5 top-2.5"></i>
+          <input type="text" name="q" placeholder="Search skills, peers..." class="w-full pl-10 pr-3 py-2 rounded-xl bg-white border-2 border-slate-900 text-xs font-semibold placeholder-slate-400 focus:outline-none shadow-[1.5px_1.5px_0px_0px_#0f172a]">
+        </form>
+
+        <!-- Navigation Section -->
+        <div>
+          <div class="px-2 mb-2 flex items-center justify-between">
+            <span class="text-[10px] font-black uppercase text-slate-500 tracking-wider">Campus Navigation</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="Campus Network Active"></span>
+          </div>
+
+          <nav class="space-y-1.5">
+            <!-- 1. Overview -->
+            <a href="{{ url_for('index') }}" class="group flex items-center justify-between px-3 py-2 rounded-2xl text-xs font-bold transition-all border-2 {% if request.path == '/' %}bg-slate-900 text-white border-slate-900 shadow-[2px_2px_0px_0px_#0f172a]{% else %}bg-transparent text-slate-700 border-transparent hover:bg-white hover:border-slate-900 hover:shadow-[2px_2px_0px_0px_#0f172a]{% endif %}">
+              <div class="flex items-center gap-2.5">
+                <div class="w-7 h-7 rounded-xl flex items-center justify-center border-2 border-slate-900 {% if request.path == '/' %}bg-[#fef08a] text-slate-900{% else %}bg-white text-slate-800 shadow-[1px_1px_0px_0px_#0f172a]{% endif %}">
+                  <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
+                </div>
+                <span>Overview</span>
+              </div>
+            </a>
+
+            <!-- 2. DNA Matcher -->
+            <a href="{{ url_for('matches') }}" class="group flex items-center justify-between px-3 py-2 rounded-2xl text-xs font-bold transition-all border-2 {% if request.path == '/matches' %}bg-slate-900 text-white border-slate-900 shadow-[2px_2px_0px_0px_#0f172a]{% else %}bg-transparent text-slate-700 border-transparent hover:bg-white hover:border-slate-900 hover:shadow-[2px_2px_0px_0px_#0f172a]{% endif %}">
+              <div class="flex items-center gap-2.5">
+                <div class="w-7 h-7 rounded-xl flex items-center justify-center border-2 border-slate-900 {% if request.path == '/matches' %}bg-pink-400 text-white{% else %}bg-[#ffe4e6] text-pink-600 shadow-[1px_1px_0px_0px_#0f172a]{% endif %}">
+                  <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                </div>
+                <span>DNA Matcher</span>
+              </div>
+              <span class="text-[9px] font-black px-1.5 py-0.5 rounded-md bg-[#dcfce7] border border-slate-900 text-emerald-900">AI</span>
+            </a>
+
+            <!-- 3. Knowledge Graph -->
+            <a href="{{ url_for('network') }}" class="group flex items-center justify-between px-3 py-2 rounded-2xl text-xs font-bold transition-all border-2 {% if request.path == '/network' %}bg-slate-900 text-white border-slate-900 shadow-[2px_2px_0px_0px_#0f172a]{% else %}bg-transparent text-slate-700 border-transparent hover:bg-white hover:border-slate-900 hover:shadow-[2px_2px_0px_0px_#0f172a]{% endif %}">
+              <div class="flex items-center gap-2.5">
+                <div class="w-7 h-7 rounded-xl flex items-center justify-center border-2 border-slate-900 {% if request.path == '/network' %}bg-emerald-400 text-white{% else %}bg-[#dcfce7] text-emerald-700 shadow-[1px_1px_0px_0px_#0f172a]{% endif %}">
+                  <i data-lucide="share-2" class="w-3.5 h-3.5"></i>
+                </div>
+                <span>Knowledge Graph</span>
+              </div>
+            </a>
+
+            <!-- 4. Mentors & Peers -->
+            <a href="{{ url_for('directory') }}" class="group flex items-center justify-between px-3 py-2 rounded-2xl text-xs font-bold transition-all border-2 {% if request.path == '/directory' %}bg-slate-900 text-white border-slate-900 shadow-[2px_2px_0px_0px_#0f172a]{% else %}bg-transparent text-slate-700 border-transparent hover:bg-white hover:border-slate-900 hover:shadow-[2px_2px_0px_0px_#0f172a]{% endif %}">
+              <div class="flex items-center gap-2.5">
+                <div class="w-7 h-7 rounded-xl flex items-center justify-center border-2 border-slate-900 {% if request.path == '/directory' %}bg-blue-400 text-white{% else %}bg-[#e0f2fe] text-blue-700 shadow-[1px_1px_0px_0px_#0f172a]{% endif %}">
+                  <i data-lucide="users" class="w-3.5 h-3.5"></i>
+                </div>
+                <span>Mentors & Peers</span>
+              </div>
+            </a>
+
+            <!-- 5. Swaps & Pods -->
+            <a href="{{ url_for('exchanges') }}" class="group flex items-center justify-between px-3 py-2 rounded-2xl text-xs font-bold transition-all border-2 {% if request.path == '/exchanges' %}bg-slate-900 text-white border-slate-900 shadow-[2px_2px_0px_0px_#0f172a]{% else %}bg-transparent text-slate-700 border-transparent hover:bg-white hover:border-slate-900 hover:shadow-[2px_2px_0px_0px_#0f172a]{% endif %}">
+              <div class="flex items-center gap-2.5">
+                <div class="w-7 h-7 rounded-xl flex items-center justify-center border-2 border-slate-900 {% if request.path == '/exchanges' %}bg-amber-400 text-slate-900{% else %}bg-[#fef08a] text-amber-700 shadow-[1px_1px_0px_0px_#0f172a]{% endif %}">
+                  <i data-lucide="repeat" class="w-3.5 h-3.5"></i>
+                </div>
+                <span>Swaps & Pods</span>
+              </div>
+              {% if pending_count > 0 %}
+              <span class="px-2 py-0.5 rounded-full bg-[#fef08a] text-slate-900 border border-slate-900 text-[10px] font-black shadow-[1px_1px_0px_0px_#0f172a]">{{ pending_count }}</span>
+              {% endif %}
+            </a>
+
+            <!-- 6. Messages -->
+            <a href="{{ url_for('messages') }}" class="group flex items-center justify-between px-3 py-2 rounded-2xl text-xs font-bold transition-all border-2 {% if '/messages' in request.path %}bg-slate-900 text-white border-slate-900 shadow-[2px_2px_0px_0px_#0f172a]{% else %}bg-transparent text-slate-700 border-transparent hover:bg-white hover:border-slate-900 hover:shadow-[2px_2px_0px_0px_#0f172a]{% endif %}">
+              <div class="flex items-center gap-2.5">
+                <div class="w-7 h-7 rounded-xl flex items-center justify-center border-2 border-slate-900 {% if '/messages' in request.path %}bg-purple-400 text-white{% else %}bg-[#f3e8ff] text-purple-700 shadow-[1px_1px_0px_0px_#0f172a]{% endif %}">
+                  <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
+                </div>
+                <span>Messages</span>
+              </div>
+              {% if unread_messages > 0 %}
+              <span class="px-2 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-black border border-slate-900 shadow-[1px_1px_0px_0px_#0f172a]">{{ unread_messages }}</span>
+              {% endif %}
+            </a>
+          </nav>
+        </div>
+
+        <!-- Direct Barter CTA Card in Sidebar -->
+        <div class="p-3.5 rounded-2xl bg-white border-2 border-slate-900 shadow-[2px_2px_0px_0px_#0f172a] space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5 text-xs font-black text-slate-900">
+              <span>⚡ Peer Barter</span>
+            </div>
+            <span class="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-[#fef08a] border border-slate-900">Zero $</span>
+          </div>
+          <p class="text-[11px] font-semibold text-slate-600 leading-snug">
+            Exchange your skills directly with peers. No money required.
+          </p>
+          <a href="{{ url_for('directory') }}" class="inline-flex items-center justify-center w-full py-2 px-3 rounded-xl bg-[#fef08a] border-2 border-slate-900 font-black text-[11px] text-slate-900 shadow-[1.5px_1.5px_0px_0px_#0f172a] hover:bg-[#fde047] transition-all">
+            Find Peer to Swap &rarr;
+          </a>
+        </div>
+
+      </div>
+
+      <!-- Sidebar Bottom Card: User Identity / Join Badge -->
+      <div class="p-3.5 border-t-2 border-slate-900 bg-white">
+        {% if current_user %}
+        <a href="{{ url_for('profile') }}" class="flex items-center gap-3 p-1.5 rounded-2xl hover:bg-[#faf8f5] border border-transparent hover:border-slate-900 transition-all group">
+          <img src="{{ current_user.avatar }}" alt="{{ current_user.name }}" class="w-9 h-9 rounded-full object-cover border-2 border-slate-900 shrink-0 shadow-[1px_1px_0px_0px_#0f172a]">
+          <div class="flex-1 min-w-0">
+            <div class="text-xs font-black text-slate-900 truncate">{{ current_user.name }}</div>
+            <div class="text-[10px] text-amber-700 font-extrabold truncate flex items-center gap-1">
+              <span>⭐ {{ current_user.karma_points }} Points</span>
+            </div>
+          </div>
+          <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400 group-hover:text-slate-900 transition-transform group-hover:translate-x-0.5"></i>
+        </a>
+        {% else %}
+        <div class="space-y-2">
+          <div class="text-[11px] font-black text-slate-800">Campus Barter Network</div>
+          <div class="grid grid-cols-2 gap-2">
+            <a href="{{ url_for('login') }}" class="py-1.5 px-2 text-center rounded-xl bg-slate-900 text-white font-extrabold text-xs shadow-[1.5px_1.5px_0px_0px_#0f172a]">Log In</a>
+            <a href="{{ url_for('register') }}" class="py-1.5 px-2 text-center rounded-xl bg-[#fef08a] border-2 border-slate-900 text-slate-900 font-extrabold text-xs shadow-[1.5px_1.5px_0px_0px_#0f172a]">Sign Up</a>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 min-w-0 flex flex-col min-h-[calc(100vh-66px)]">
+      
+      <!-- Flash Messages Banner (Clean Neo-Brutalist Alert) -->
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-3 w-full">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="space-y-2">
+              {% for category, message in messages %}
+              <div class="flex items-center justify-between p-3 rounded-2xl border-2 border-slate-900 text-xs sm:text-sm font-bold shadow-[2px_2px_0px_0px_#0f172a]
+                {% if category == 'success' %}bg-[#dcfce7] text-slate-900
+                {% elif category == 'error' %}bg-[#ffe4e6] text-slate-900
+                {% elif category == 'info' %}bg-[#e0f2fe] text-slate-900
+                {% else %}bg-[#fef08a] text-slate-900{% endif %}">
+                <div class="flex items-center gap-2">
+                  <i data-lucide="check-circle" class="w-4 h-4 shrink-0"></i>
+                  <span>{{ message }}</span>
+                </div>
+                <button onclick="this.parentElement.remove()" class="text-slate-900 hover:opacity-70 p-1">
+                  <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+              </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+      </div>
+
+      <!-- Main Content Block -->
+      <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {% block content %}{% endblock %}
+      </main>
+
+      <!-- Simple Neo-Brutalist Footer -->
+      <footer class="mt-auto border-t-2 border-slate-900 bg-white py-6 text-xs text-slate-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 font-semibold">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-[#fef08a] border border-slate-900"></span>
+            <span><strong>SkillSwap DNA</strong> &mdash; Zero-money campus knowledge barter network</span>
+          </div>
+          <div class="flex items-center gap-4 text-slate-600">
+            <span>No Money Required</span>
+            &bull;
+            <span>Direct & Circular Swaps</span>
+            &bull;
+            <span>MongoDB Cloud</span>
+          </div>
+        </div>
+      </footer>
+
+    </div>
+
+  </div>
+
+  <script>
+    lucide.createIcons();
+    function toggleSidebar() {
+      const sidebar = document.getElementById('app-sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      if (sidebar && overlay) {
+        const isClosed = sidebar.classList.contains('-translate-x-full');
+        if (isClosed) {
+          sidebar.classList.remove('-translate-x-full');
+          overlay.classList.remove('hidden');
+          document.body.classList.add('overflow-hidden', 'lg:overflow-auto');
+        } else {
+          sidebar.classList.add('-translate-x-full');
+          overlay.classList.add('hidden');
+          document.body.classList.remove('overflow-hidden', 'lg:overflow-auto');
+        }
+      }
+    }
+  </script>
+  <!-- Asynchronous AJAX Actions & Toast System -->
+  <script src="{{ url_for('static', filename='js/ajax_actions.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

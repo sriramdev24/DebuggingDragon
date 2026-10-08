@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}My Skill DNA Profile | SkillSwap DNA{% endblock %}
+
+{% block content %}
+<div class="space-y-8 max-w-5xl mx-auto py-2">
+
+  <!-- Header Banner Card -->
+  <div class="neo-card p-6 sm:p-8 bg-white flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+    <div class="flex items-center gap-4">
+      <div class="w-20 h-20 rounded-full overflow-hidden border-2 border-slate-900 bg-[#fef08a] shadow-[2px_2px_0px_0px_#0f172a]">
+        <img src="{{ user.avatar }}" alt="{{ user.name }}" class="w-full h-full object-cover">
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="font-display font-black text-2xl sm:text-3xl text-slate-900">{{ user.name }}</h1>
+          <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-[#fef08a] border border-slate-900">Active DNA</span>
+        </div>
+        <div class="text-xs sm:text-sm font-bold text-slate-700 mt-0.5">{{ user.department }} &bull; {{ user.year }}</div>
+        <div class="text-xs text-slate-500 font-semibold">{{ user.email }}</div>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-4 bg-[#faf8f5] border-2 border-slate-900 p-3 rounded-2xl shadow-[2px_2px_0px_0px_#0f172a]">
+      <div class="text-center px-2">
+        <div class="text-base font-black font-display text-slate-900">{{ user.karma_points }}</div>
+        <div class="text-[10px] text-slate-500 uppercase font-black">Points</div>
+      </div>
+      <div class="w-px h-6 bg-slate-300"></div>
+      <div class="text-center px-2">
+        <div class="text-base font-black font-display text-slate-900">⭐ {{ user.rating }}</div>
+        <div class="text-[10px] text-slate-500 uppercase font-black">Rating</div>
+      </div>
+      <div class="w-px h-6 bg-slate-300"></div>
+      <div class="text-center px-2">
+        <div class="text-base font-black font-display text-slate-900">{{ user.completed_swaps }}</div>
+        <div class="text-[10px] text-slate-500 uppercase font-black">Swaps Done</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Two Column Layout: Skills Offered vs Skills Wanted -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    
+    <!-- Skills Offered (What You Teach) -->
+    <div class="card-mint p-6 space-y-6">
+      <div class="flex items-center justify-between">
+        <h2 class="font-display font-black text-xl text-slate-900 flex items-center gap-2">
+          <span>📤</span> Skills Offered (To Teach)
+        </h2>
+        <span class="px-2.5 py-0.5 rounded-full bg-white border border-slate-900 text-xs font-black">
+          {{ user.skills_offered|length }} Skills
+        </span>
+      </div>
+
+      <!-- Add Form -->
+      <form action="{{ url_for('add_skill') }}" method="POST" class="p-4 rounded-2xl bg-white border-2 border-slate-900 space-y-3 text-xs font-bold text-slate-700 shadow-[2px_2px_0px_0px_#0f172a]">
+        <input type="hidden" name="skill_type" value="offered">
+        <div class="font-black text-slate-900 text-xs">Add Skill to Offer:</div>
+
+        <div>
+          <input type="text" name="name" required placeholder="Skill name (e.g. Python, UI Design, Japanese)" class="w-full px-3 py-2 rounded-xl bg-[#faf8f5] border-2 border-slate-900 text-slate-900">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <select name="category" class="w-full px-3 py-2 rounded-xl bg-[#faf8f5] border-2 border-slate-900 text-slate-900">
+            {% for c in categories %}
+            <option value="{{ c }}">{{ c }}</option>
+            {% endfor %}
+          </select>
+          <select name="level" class="w-full px-3 py-2 rounded-xl bg-[#faf8f5] border-2 border-slate-900 text-slate-900">
+            {% for l in levels %}
+            <option value="{{ l }}" {% if l == 'Advanced' %}selected{% endif %}>{{ l }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <input type="text" name="experience" placeholder="Brief experience notes (e.g. 2 years experience)" class="w-full px-3 py-2 rounded-xl bg-[#faf8f5] border-2 border-slate-900 text-slate-900">
+        </div>
+
+        <button type="submit" class="btn-neo-dark text-xs w-full py-2">
+          + Register Offered Skill
+        </button>
+      </form>
+
+      <!-- Existing Skills -->
+      <div class="space-y-2.5">
+        {% for s in user.skills_offered %}
+        <div class="p-3 rounded-2xl bg-white border-2 border-slate-900 flex items-center justify-between gap-3 shadow-[2px_2px_0px_0px_#0f172a]">
+          <div class="text-xs font-bold">
+            <div class="text-slate-900 font-extrabold">{{ s.name }}</div>
+            <div class="text-slate-500 text-[11px]">{{ s.level }} &bull; {{ s.category }}</div>
+          </div>
+          <form action="{{ url_for('delete_skill', skill_type='offered', skill_id=s.id) }}" method="POST">
+            <button type="submit" class="w-7 h-7 rounded-full border border-slate-900 bg-rose-100 hover:bg-rose-200 text-rose-700 flex items-center justify-center font-bold text-xs" title="Remove">✕</button>
+          </form>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Skills Wanted (What You Learn) -->
+    <div class="card-purple p-6 space-y-6">
+      <div class="flex items-center justify-between">
+        <h2 class="font-display font-black text-xl text-slate-900 flex items-center gap-2">
+          <span>🎯</span> Skills Wanted (To Learn)
+        </h2>
+        <span class="px-2.5 py-0.5 rounded-full bg-white border border-slate-900 text-xs font-black">
+          {{ user.skills_wanted|length }} Goals
+        </span>
+      </div>
+
+      <!-- Add Form -->
+      <form action="{{ url_for('add_skill') }}" method="POST" class="p-4 rounded-2xl bg-white border-2 border-slate-900 space-y-3 text-xs font-bold text-slate-700 shadow-[2px_2px_0px_0px_#0f172a]">
+        <input type="hidden" name="skill_type" value="wanted">
+        <div class="font-black text-slate-900 text-xs">Add Learning Goal:</div>
+
+        <div>
+          <input type="text" name="name" required placeholder="Target skill (e.g. Video Editing, Spanish)" class="w-full px-3 py-2 rounded-xl bg-[#faf8f5] border-2 border-slate-900 text-slate-900">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <select name="category" class="w-full px-3 py-2 rounded-xl bg-[#faf8f5] border-2 border-slate-900 text-slate-900">
+            {% for c in categories %}
+            <option value="{{ c }}">{{ c }}</option>
+            {% endfor %}
+          </select>
+          <select name="target_level" class="w-full px-3 py-2 rounded-xl bg-[#faf8f5] border-2 border-slate-900 text-slate-900">
+            {% for l in levels %}
+            <option value="{{ l }}">{{ l }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <input type="text" name="goal" placeholder="Specific goal (e.g. Learn to design mobile screens)" class="w-full px-3 py-2 rounded-xl bg-[#faf8f5] border-2 border-slate-900 text-slate-900">
+        </div>
+
+        <button type="submit" class="btn-neo-dark text-xs w-full py-2">
+          + Add Learning Goal
+        </button>
+      </form>
+
+      <!-- Existing Wanted -->
+      <div class="space-y-2.5">
+        {% for s in user.skills_wanted %}
+        <div class="p-3 rounded-2xl bg-white border-2 border-slate-900 flex items-center justify-between gap-3 shadow-[2px_2px_0px_0px_#0f172a]">
+          <div class="text-xs font-bold">
+            <div class="text-slate-900 font-extrabold">{{ s.name }}</div>
+            <div class="text-slate-500 text-[11px]">{{ s.target_level }} &bull; {{ s.goal }}</div>
+          </div>
+          <form action="{{ url_for('delete_skill', skill_type='wanted', skill_id=s.id) }}" method="POST">
+            <button type="submit" class="w-7 h-7 rounded-full border border-slate-900 bg-rose-100 hover:bg-rose-200 text-rose-700 flex items-center justify-center font-bold text-xs" title="Remove">✕</button>
+          </form>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Availability & Schedule Form -->
+  <form action="{{ url_for('update_profile') }}" method="POST" class="neo-card p-6 sm:p-8 bg-white space-y-6">
+    <div class="space-y-1">
+      <h2 class="font-display font-black text-xl text-slate-900">
+        Schedule Availability Matrix
+      </h2>
+      <p class="text-xs font-semibold text-slate-600">
+        Configure your free days and preferred meeting formats.
+      </p>
+    </div>
+
+    <!-- Available Days -->
+    <div class="space-y-2">
+      <label class="text-xs font-black text-slate-900 uppercase tracking-wider block">Available Days</label>
+      <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
+        {% for day in all_days %}
+        <label class="flex items-center gap-2 p-2.5 rounded-xl bg-[#faf8f5] border-2 border-slate-900 cursor-pointer text-xs font-bold shadow-[1.5px_1.5px_0px_0px_#0f172a]">
+          <input type="checkbox" name="days" value="{{ day }}" {% if day in user.availability.days %}checked{% endif %} class="rounded text-slate-900 focus:ring-0">
+          <span>{{ day[:3] }}</span>
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Available Time Slots -->
+    <div class="space-y-2">
+      <label class="text-xs font-black text-slate-900 uppercase tracking-wider block">Preferred Time Slots</label>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
+        {% for slot in all_slots %}
+        <label class="flex items-center gap-2 p-2.5 rounded-xl bg-[#faf8f5] border-2 border-slate-900 cursor-pointer text-xs font-bold shadow-[1.5px_1.5px_0px_0px_#0f172a]">
+          <input type="checkbox" name="slots" value="{{ slot }}" {% if slot in user.availability.slots %}checked{% endif %} class="rounded text-slate-900 focus:ring-0">
+          <span>{{ slot }}</span>
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="flex justify-end pt-2 border-t-2 border-slate-900">
+      <button type="submit" class="btn-neo-dark text-xs py-2.5 px-6">
+        Save Availability & Profile
+      </button>
+    </div>
+  </form>
+
+</div>
+{% endblock %}

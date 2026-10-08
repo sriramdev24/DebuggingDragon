@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Knowledge Graph | SkillSwap DNA{% endblock %}
+
+{% block content %}
+<div class="space-y-6 py-2">
+
+  <!-- Header Banner -->
+  <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    <div class="space-y-1">
+      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#fef08a] border-2 border-slate-900 text-xs font-black">
+        <span>Campus Knowledge Ecosystem</span>
+      </div>
+      <h1 class="font-display font-black text-2xl sm:text-4xl text-slate-900 tracking-tight">
+        Visual Knowledge Graph
+      </h1>
+      <p class="text-xs sm:text-sm font-semibold text-slate-600">
+        See how skills flow between students across campus. Click any node to inspect their Skill DNA!
+      </p>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="flex items-center gap-4 bg-white border-2 border-slate-900 p-2.5 rounded-2xl shadow-[2px_2px_0px_0px_#0f172a]">
+      <div class="text-center px-2">
+        <div id="graph-node-count" class="text-lg font-black font-display text-slate-900">...</div>
+        <div class="text-[10px] text-slate-500 uppercase font-black">Nodes</div>
+      </div>
+      <div class="w-px h-6 bg-slate-300"></div>
+      <div class="text-center px-2">
+        <div id="graph-edge-count" class="text-lg font-black font-display text-slate-900">...</div>
+        <div class="text-[10px] text-slate-500 uppercase font-black">Connections</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Controls Bar -->
+  <div class="neo-card p-4 bg-white flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+    
+    <!-- Search Bar -->
+    <div class="relative flex-1 max-w-md">
+      <i data-lucide="search" class="w-4 h-4 text-slate-500 absolute left-4 top-3"></i>
+      <input type="text" id="graph-search" oninput="searchGraph(this.value)" placeholder="Search peer (e.g. Alex, Maya) or skill (e.g. Python, Figma)..." class="w-full pl-11 pr-4 py-2 rounded-full bg-[#faf8f5] border-2 border-slate-900 text-xs font-bold text-slate-900 placeholder-slate-400 focus:outline-none">
+    </div>
+
+    <!-- Category Filters (Neo Pills) -->
+    <div class="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0 text-xs">
+      <button onclick="filterGraphCategory('all')" class="px-3 py-1.5 rounded-full bg-slate-900 text-white font-black whitespace-nowrap">All</button>
+      {% for cat in categories %}
+      <button onclick="filterGraphCategory('{{ cat }}')" class="px-3 py-1.5 rounded-full bg-[#faf8f5] hover:bg-slate-200 border-2 border-slate-900 text-slate-900 font-extrabold whitespace-nowrap transition-colors shadow-[1px_1px_0px_0px_#0f172a]">
+        {{ cat }}
+      </button>
+      {% endfor %}
+    </div>
+
+    <!-- Tools -->
+    <div class="flex items-center gap-1.5 shrink-0">
+      <button onclick="zoomGraph(1.2)" title="Zoom In" class="w-9 h-9 rounded-full bg-white border-2 border-slate-900 flex items-center justify-center font-bold hover:bg-slate-100 shadow-[1px_1px_0px_0px_#0f172a]">
+        +
+      </button>
+      <button onclick="zoomGraph(0.8)" title="Zoom Out" class="w-9 h-9 rounded-full bg-white border-2 border-slate-900 flex items-center justify-center font-bold hover:bg-slate-100 shadow-[1px_1px_0px_0px_#0f172a]">
+        &minus;
+      </button>
+      <button onclick="resetGraphView()" title="Fit View" class="px-3 py-1.5 rounded-full bg-white border-2 border-slate-900 text-xs font-bold hover:bg-slate-100 shadow-[1px_1px_0px_0px_#0f172a]">
+        Center
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Canvas Container with Neo-Brutalist Legend & Drawer -->
+  <div class="relative rounded-3xl overflow-hidden border-2 border-slate-900 shadow-[4px_4px_0px_0px_#0f172a] bg-[#faf8f5]">
+    
+    <!-- Graph Canvas -->
+    <div id="network-graph-canvas"></div>
+
+    <!-- Floating Legend (Screenshot Pastel Pills Style) -->
+    <div class="absolute bottom-4 left-4 p-4 rounded-2xl bg-white border-2 border-slate-900 shadow-[3px_3px_0px_0px_#0f172a] space-y-2 text-[11px] font-bold text-slate-800 max-w-xs z-10 hidden sm:block">
+      <div class="text-xs font-black uppercase tracking-wider pb-1 border-b border-slate-200">
+        Graph Legend
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="w-3.5 h-3.5 rounded-full border-2 border-slate-900 bg-white"></span>
+        <span>Student Avatar</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="w-3.5 h-3.5 rounded-full bg-[#38bdf8] border border-slate-900"></span>
+        <span>Skill Node (Color coded)</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="w-6 h-1 bg-emerald-500 rounded"></span>
+        <span>Solid Arrow: Teaches Skill</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="w-6 h-1 bg-purple-500 rounded border-t border-dashed"></span>
+        <span>Dashed Arrow: Wants to Learn</span>
+      </div>
+    </div>
+
+    <!-- Slide-Out Inspector Drawer -->
+    <div id="node-drawer" class="absolute top-0 right-0 h-full w-full sm:w-96 bg-white border-l-2 border-slate-900 p-6 shadow-2xl transition-transform duration-300 ease-in-out transform translate-x-full z-20 overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b-2 border-slate-900">
+        <h3 class="font-display font-black text-sm text-slate-900 uppercase tracking-wider">
+          Node Inspector
+        </h3>
+        <button onclick="closeDrawer()" class="w-7 h-7 rounded-full border border-slate-900 bg-slate-100 flex items-center justify-center font-bold">
+          ✕
+        </button>
+      </div>
+
+      <div id="drawer-content" class="mt-4">
+        <!-- populated dynamically -->
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/network_graph.js') }}"></script>
+{% endblock %}

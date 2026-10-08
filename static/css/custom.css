@@ -1,0 +1,461 @@
+/* SkillSwap DNA - Neo-Brutalist & Friendly Pastel Design System */
+/* Inspired by Educa & Synapse minimalist colorful aesthetics */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700;800&display=swap');
+
+:root {
+  --bg-cream: #faf8f5;
+  --color-ink: #0f172a;
+  --pastel-mint: #dcfce7;
+  --pastel-mint-border: #86efac;
+  --pastel-purple: #f3e8ff;
+  --pastel-purple-border: #d8b4fe;
+  --pastel-yellow: #fef08a;
+  --pastel-yellow-border: #fde047;
+  --pastel-blue: #e0f2fe;
+  --pastel-blue-border: #7dd3fc;
+  --pastel-pink: #ffe4e6;
+  --pastel-pink-border: #fda4af;
+  --pastel-beige: #fef9c3;
+  --shadow-offset: 3px 3px 0px 0px #0f172a;
+  --shadow-offset-lg: 5px 5px 0px 0px #0f172a;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background-color: var(--bg-cream);
+  color: var(--color-ink);
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, .font-display {
+  font-family: 'Space Grotesk', sans-serif;
+  color: var(--color-ink);
+}
+
+/* Neo-Brutalist Solid Offset Cards */
+.neo-card {
+  background: #ffffff;
+  border: 2px solid var(--color-ink);
+  border-radius: 1.5rem;
+  box-shadow: var(--shadow-offset);
+  transition: all 0.18s ease-in-out;
+}
+
+.neo-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-offset-lg);
+}
+
+.neo-card-static {
+  border: 2px solid var(--color-ink);
+  border-radius: 1.5rem;
+  box-shadow: var(--shadow-offset);
+}
+
+/* Pastel Theme Variations */
+.card-mint {
+  background-color: var(--pastel-mint);
+  border: 2px solid var(--color-ink);
+  border-radius: 1.5rem;
+  box-shadow: var(--shadow-offset);
+}
+
+.card-purple {
+  background-color: var(--pastel-purple);
+  border: 2px solid var(--color-ink);
+  border-radius: 1.5rem;
+  box-shadow: var(--shadow-offset);
+}
+
+.card-yellow {
+  background-color: var(--pastel-yellow);
+  border: 2px solid var(--color-ink);
+  border-radius: 1.5rem;
+  box-shadow: var(--shadow-offset);
+}
+
+.card-blue {
+  background-color: var(--pastel-blue);
+  border: 2px solid var(--color-ink);
+  border-radius: 1.5rem;
+  box-shadow: var(--shadow-offset);
+}
+
+.card-pink {
+  background-color: var(--pastel-pink);
+  border: 2px solid var(--color-ink);
+  border-radius: 1.5rem;
+  box-shadow: var(--shadow-offset);
+}
+
+.card-beige {
+  background-color: #fffbeb;
+  border: 2px solid var(--color-ink);
+  border-radius: 1.5rem;
+  box-shadow: var(--shadow-offset);
+}
+
+/* Circular Arrow Buttons (Like in screenshot) */
+.circle-arrow-btn {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  border: 2px solid var(--color-ink);
+  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-ink);
+  transition: all 0.15s ease-in-out;
+  box-shadow: 2px 2px 0px 0px var(--color-ink);
+}
+
+.circle-arrow-btn:hover {
+  background-color: var(--color-ink);
+  color: #ffffff;
+  transform: scale(1.05);
+}
+
+/* Pill Badges */
+.neo-pill {
+  border: 1.5px solid var(--color-ink);
+  border-radius: 9999px;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  box-shadow: 1.5px 1.5px 0px 0px var(--color-ink);
+}
+
+/* Solid Black Neo Buttons */
+.btn-neo-dark {
+  background-color: var(--color-ink);
+  color: #ffffff;
+  border: 2px solid var(--color-ink);
+  border-radius: 9999px;
+  padding: 0.65rem 1.4rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  transition: all 0.15s ease-in-out;
+  box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 0.4);
+}
+
+.btn-neo-dark:hover {
+  background-color: #1e293b;
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px 0px var(--color-ink);
+}
+
+.btn-neo-outline {
+  background-color: #ffffff;
+  color: var(--color-ink);
+  border: 2px solid var(--color-ink);
+  border-radius: 9999px;
+  padding: 0.65rem 1.4rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  transition: all 0.15s ease-in-out;
+  box-shadow: 2px 2px 0px 0px var(--color-ink);
+}
+
+.btn-neo-outline:hover {
+  background-color: #f1f5f9;
+  transform: translate(-1px, -1px);
+  box-shadow: 3.5px 3.5px 0px 0px var(--color-ink);
+}
+
+/* Arched Hero Graphic Frame (Screenshot 2 style) */
+.hero-arch-bg {
+  border-top-left-radius: 140px;
+  border-top-right-radius: 140px;
+  border-bottom-left-radius: 1rem;
+  border-bottom-right-radius: 1rem;
+  border: 2px solid var(--color-ink);
+  box-shadow: 4px 4px 0px 0px var(--color-ink);
+}
+
+/* Stacked Colorful Card Deck Effect (Screenshot 1 style) */
+.stacked-cards-container {
+  position: relative;
+  display: inline-block;
+}
+
+.stacked-card-layer-1 {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: -12px;
+  bottom: -12px;
+  background: var(--pastel-purple);
+  border: 2px solid var(--color-ink);
+  border-radius: 1.5rem;
+  z-index: 1;
+}
+
+.stacked-card-layer-2 {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  right: -6px;
+  bottom: -6px;
+  background: var(--pastel-pink);
+  border: 2px solid var(--color-ink);
+  border-radius: 1.5rem;
+  z-index: 2;
+}
+
+.stacked-card-main {
+  position: relative;
+  background: #ffffff;
+  border: 2px solid var(--color-ink);
+  border-radius: 1.5rem;
+  z-index: 3;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-cream);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border: 1px solid var(--color-ink);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Vis Network Canvas */
+#network-graph-canvas {
+  width: 100%;
+  height: 640px;
+  border-radius: 1.5rem;
+  background-color: #faf8f5;
+  border: 2px solid var(--color-ink);
+}
+
+/* ==============================================================
+   SKILL SWAP ANIMATIONS & INTERACTIVE BARTER MICRO-INTERACTIONS
+   ============================================================== */
+
+/* 1. Bidirectional Swap Arcs (Skills sliding past each other) */
+@keyframes swap-trade-A-to-B {
+  0% {
+    transform: translate(0, 0) scale(1);
+    box-shadow: 2px 2px 0px 0px #0f172a;
+    z-index: 10;
+  }
+  40% {
+    transform: translate(calc(50% + 20px), -24px) scale(1.08);
+    box-shadow: 5px 5px 0px 0px #0f172a;
+    z-index: 20;
+  }
+  60% {
+    transform: translate(calc(75% + 10px), -12px) scale(1.04);
+    z-index: 20;
+  }
+  100% {
+    transform: translate(calc(100% + 32px), 0) scale(1);
+    box-shadow: 2px 2px 0px 0px #0f172a;
+    z-index: 10;
+  }
+}
+
+@keyframes swap-trade-B-to-A {
+  0% {
+    transform: translate(0, 0) scale(1);
+    box-shadow: 2px 2px 0px 0px #0f172a;
+    z-index: 10;
+  }
+  40% {
+    transform: translate(calc(-50% - 20px), 24px) scale(1.08);
+    box-shadow: 5px 5px 0px 0px #0f172a;
+    z-index: 20;
+  }
+  60% {
+    transform: translate(calc(-75% - 10px), 12px) scale(1.04);
+    z-index: 20;
+  }
+  100% {
+    transform: translate(calc(-100% - 32px), 0) scale(1);
+    box-shadow: 2px 2px 0px 0px #0f172a;
+    z-index: 10;
+  }
+}
+
+.animate-swap-A {
+  animation: swap-trade-A-to-B 0.85s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.animate-swap-B {
+  animation: swap-trade-B-to-A 0.85s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* 2. Rotating Barter Arrows Spinner */
+@keyframes barter-spin-continuous {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-barter-spin {
+  animation: barter-spin-continuous 6s linear infinite;
+}
+
+.animate-barter-spin-fast {
+  animation: barter-spin-continuous 0.75s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 3. Pulsing DNA Barter Sparkle */
+@keyframes pulse-synergy {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 0.9;
+  }
+}
+
+.animate-synergy-pulse {
+  animation: pulse-synergy 2s ease-in-out infinite;
+}
+
+/* 4. Moving Dashed Barter Connector Line */
+@keyframes dash-flow-forward {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+
+@keyframes dash-flow-backward {
+  to {
+    stroke-dashoffset: 24;
+  }
+}
+
+.animate-dash-forward {
+  animation: dash-flow-forward 0.9s linear infinite;
+}
+
+.animate-dash-backward {
+  animation: dash-flow-backward 0.9s linear infinite;
+}
+
+/* 5. Circular Pod 3-Phase Step Sequencer Glow */
+@keyframes pod-step-glow {
+  0%, 100% {
+    transform: translateY(0);
+    box-shadow: 2px 2px 0px 0px #0f172a;
+  }
+  50% {
+    transform: translateY(-3px);
+    box-shadow: 4px 4px 0px 0px #0f172a;
+  }
+}
+
+.pod-step-active {
+  animation: pod-step-glow 1.2s ease-in-out infinite;
+  border-color: #0f172a !important;
+  background-color: #fef08a !important;
+}
+
+/* 6. Floating Karma Particles (+20 Karma Pop) */
+@keyframes karma-particle-float {
+  0% {
+    transform: translate(0, 0) scale(0.6);
+    opacity: 0;
+  }
+  20% {
+    transform: translate(-10px, -20px) scale(1.2);
+    opacity: 1;
+  }
+  80% {
+    transform: translate(15px, -70px) scale(1);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(5px, -110px) scale(0.8);
+    opacity: 0;
+  }
+}
+
+.karma-float-particle {
+  position: absolute;
+  pointer-events: none;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 800;
+  animation: karma-particle-float 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  z-index: 9999;
+}
+
+/* 7. Card Barter Bounce & Lock-In Stamp */
+@keyframes lock-in-stamp {
+  0% {
+    transform: scale(2) rotate(-15deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(0.95) rotate(-3deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(-3deg);
+    opacity: 1;
+  }
+}
+
+.animate-stamp-lock {
+  animation: lock-in-stamp 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* 8. Reciprocal Trade Horizontal Hover Interactions */
+.trade-pill-hover,
+.trade-pill-left,
+.trade-pill-right {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-sizing: border-box;
+}
+
+.group:hover .trade-pill-left {
+  transform: translateX(3px);
+}
+
+.group:hover .trade-pill-right {
+  transform: translateX(-3px);
+}
+
+.group:hover .trade-swap-icon {
+  transform: rotate(180deg);
+}
+
+/* 9. Dedicated Sidebar Aesthetics & Smooth Scrolling */
+#app-sidebar::-webkit-scrollbar {
+  width: 5px;
+}
+#app-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+#app-sidebar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+#app-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

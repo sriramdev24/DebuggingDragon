@@ -1,0 +1,495 @@
+{% extends "base.html" %}
+
+{% block title %}Register &amp; Build Skill DNA | SkillSwap Campus Network{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-6 sm:py-10 space-y-8">
+
+  <!-- Header Word Bubbles (Screenshot 1 & 2 Style) -->
+  <div class="text-center space-y-3">
+    <div class="flex flex-wrap items-center justify-center gap-2">
+      <span class="px-3.5 py-1 rounded-full bg-[#fecdd3] border-2 border-slate-900 text-xs font-black shadow-[1.5px_1.5px_0px_0px_#0f172a]">
+        Join Network
+      </span>
+      <span class="px-3.5 py-1 rounded-full bg-[#fef08a] border-2 border-slate-900 text-xs font-black shadow-[1.5px_1.5px_0px_0px_#0f172a]">
+        Zero Money
+      </span>
+      <span class="px-3.5 py-1 rounded-full bg-[#dcfce7] border-2 border-slate-900 text-xs font-black shadow-[1.5px_1.5px_0px_0px_#0f172a]">
+        100 Points Bonus
+      </span>
+      <span class="px-3.5 py-1 rounded-full bg-[#f3e8ff] border-2 border-slate-900 text-xs font-black shadow-[1.5px_1.5px_0px_0px_#0f172a]">
+        Illustrated DNA
+      </span>
+    </div>
+
+    <h1 class="font-display font-black text-3xl sm:text-5xl text-slate-900 tracking-tight">
+      Register Your <span class="bg-[#fef08a] px-2.5 py-0.5 rounded-xl border-2 border-slate-900 shadow-[3px_3px_0px_0px_#0f172a]">Skill DNA</span>
+    </h1>
+    <p class="text-xs sm:text-sm text-slate-600 font-semibold max-w-xl mx-auto">
+      Create your student account, configure what you offer and what you want to learn, and let our reciprocal engine find your campus barter partners instantly.
+    </p>
+  </div>
+
+  <!-- Two-Column Grid: Form on Left/Center, Dynamic Illustrator Visual on Right -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+    
+    <!-- Left Column: Registration & Skill Setup Form -->
+    <div class="lg:col-span-7">
+      
+      <!-- Layered Card Effect (Synapse Stacked Style) -->
+      <div class="stacked-cards-container w-full">
+        <div class="stacked-card-layer-1"></div>
+        <div class="stacked-card-layer-2"></div>
+
+        <div class="stacked-card-main p-6 sm:p-8 bg-white space-y-6">
+          
+          <div class="flex items-center justify-between border-b-2 border-slate-900 pb-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-2xl bg-[#dcfce7] border-2 border-slate-900 flex items-center justify-center font-display font-black text-xl shadow-[2px_2px_0px_0px_#0f172a]">
+                🧬
+              </div>
+              <div>
+                <h2 class="font-display font-black text-xl text-slate-900">Student Account &amp; Skill Setup</h2>
+                <p class="text-[11px] font-bold text-slate-500">Takes less than 60 seconds to configure your barter DNA</p>
+              </div>
+            </div>
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-[#fef08a] border border-slate-900 shadow-[1px_1px_0px_0px_#0f172a]">
+              +100 Points
+            </span>
+          </div>
+
+          <!-- Alert Container for AJAX errors -->
+          <div id="register-error-container" class="hidden p-3.5 rounded-2xl border-2 border-slate-900 bg-[#ffe4e6] text-xs font-bold text-slate-900 shadow-[2px_2px_0px_0px_#0f172a]">
+          </div>
+
+          <!-- Registration Form -->
+          <form id="register-form" action="{{ url_for('register') }}" method="POST" class="space-y-6">
+            
+            <!-- SECTION 1: Personal Credentials & Dynamic Illustrated Avatar -->
+            <div class="space-y-4">
+              <div class="flex items-center gap-2">
+                <span class="w-6 h-6 rounded-full bg-[#fef08a] border border-slate-900 flex items-center justify-center font-display font-black text-xs">
+                  1
+                </span>
+                <h3 class="font-display font-black text-base text-slate-900">
+                  Personal Details &amp; Illustrated Avatar
+                </h3>
+              </div>
+
+              <!-- Interactive Dynamic Avatar Preview & Selector -->
+              <div class="p-4 rounded-2xl bg-[#faf8f5] border-2 border-slate-900 flex flex-col sm:flex-row items-center gap-4 shadow-[2px_2px_0px_0px_#0f172a]">
+                <div class="relative shrink-0">
+                  <div class="w-20 h-20 rounded-full bg-[#e0f2fe] border-2 border-slate-900 overflow-hidden shadow-[2px_2px_0px_0px_#0f172a] flex items-center justify-center">
+                    <img 
+                      id="avatar-preview-img" 
+                      src="https://api.dicebear.com/7.x/open-peeps/svg?seed=Jordan&backgroundColor=b6e3f4" 
+                      alt="Dynamic Illustrated Student Avatar" 
+                      class="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                    >
+                  </div>
+                  <span class="absolute -bottom-1 -right-1 px-1.5 py-0.2 rounded-full bg-[#fef08a] border border-slate-900 text-[9px] font-black">
+                    Live
+                  </span>
+                </div>
+
+                <div class="flex-1 space-y-1.5 text-center sm:text-left">
+                  <div class="text-xs font-black text-slate-900">Dynamic Illustrated Persona</div>
+                  <p class="text-[11px] font-semibold text-slate-600">
+                    Your avatar dynamically adapts to your name or chosen style:
+                  </p>
+                  
+                  <!-- Preset Avatar Seeds (Interactive Illustrator Pills) -->
+                  <div class="flex flex-wrap items-center gap-1.5 justify-center sm:justify-start pt-1">
+                    <button type="button" onclick="setAvatarSeed('Creative_Jordan', 'b6e3f4')" class="avatar-seed-pill px-2.5 py-1 rounded-full bg-white border border-slate-900 text-[10px] font-extrabold hover:bg-[#fef08a] transition-all">
+                      🎨 Designer
+                    </button>
+                    <button type="button" onclick="setAvatarSeed('Hacker_Alex', 'c0aede')" class="avatar-seed-pill px-2.5 py-1 rounded-full bg-white border border-slate-900 text-[10px] font-extrabold hover:bg-[#fef08a] transition-all">
+                      💻 Coder
+                    </button>
+                    <button type="button" onclick="setAvatarSeed('Polyglot_Mateo', 'ffd5dc')" class="avatar-seed-pill px-2.5 py-1 rounded-full bg-white border border-slate-900 text-[10px] font-extrabold hover:bg-[#fef08a] transition-all">
+                      🌍 Polyglot
+                    </button>
+                    <button type="button" onclick="setAvatarSeed('Producer_Liam', 'ffdfbf')" class="avatar-seed-pill px-2.5 py-1 rounded-full bg-white border border-slate-900 text-[10px] font-extrabold hover:bg-[#fef08a] transition-all">
+                      🎧 Audio
+                    </button>
+                    <button type="button" onclick="setAvatarSeed('Scholar_Priya', 'd1d4f9')" class="avatar-seed-pill px-2.5 py-1 rounded-full bg-white border border-slate-900 text-[10px] font-extrabold hover:bg-[#fef08a] transition-all">
+                      📊 Analyst
+                    </button>
+                  </div>
+                </div>
+
+                <input type="hidden" id="reg-avatar" name="avatar" value="https://api.dicebear.com/7.x/open-peeps/svg?seed=Jordan&backgroundColor=b6e3f4">
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                
+                <!-- Full Name -->
+                <div class="space-y-1.5">
+                  <label for="reg-name" class="block text-xs font-black text-slate-800">
+                    Full Name <span class="text-rose-500">*</span>
+                  </label>
+                  <input 
+                    type="text" 
+                    id="reg-name" 
+                    name="name" 
+                    required 
+                    placeholder="e.g. Jordan Miller" 
+                    class="w-full px-4 py-3 rounded-2xl bg-slate-50 border-2 border-slate-900 text-xs sm:text-sm font-semibold text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:translate-x-[1px] focus:translate-y-[1px] shadow-[2px_2px_0px_0px_#0f172a] transition-all"
+                  >
+                </div>
+
+                <!-- University Email -->
+                <div class="space-y-1.5">
+                  <label for="reg-email" class="block text-xs font-black text-slate-800">
+                    Student Email <span class="text-rose-500">*</span>
+                  </label>
+                  <input 
+                    type="email" 
+                    id="reg-email" 
+                    name="email" 
+                    required 
+                    placeholder="e.g. jordan.m@campus.edu" 
+                    class="w-full px-4 py-3 rounded-2xl bg-slate-50 border-2 border-slate-900 text-xs sm:text-sm font-semibold text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:translate-x-[1px] focus:translate-y-[1px] shadow-[2px_2px_0px_0px_#0f172a] transition-all"
+                  >
+                </div>
+
+                <!-- Password -->
+                <div class="space-y-1.5">
+                  <label for="reg-password" class="block text-xs font-black text-slate-800">
+                    Account Password <span class="text-rose-500">*</span>
+                  </label>
+                  <div class="relative">
+                    <input 
+                      type="password" 
+                      id="reg-password" 
+                      name="password" 
+                      required 
+                      minlength="6"
+                      placeholder="At least 6 characters" 
+                      class="w-full pl-4 pr-11 py-3 rounded-2xl bg-slate-50 border-2 border-slate-900 text-xs sm:text-sm font-semibold text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:translate-x-[1px] focus:translate-y-[1px] shadow-[2px_2px_0px_0px_#0f172a] transition-all"
+                    >
+                    <button 
+                      type="button" 
+                      onclick="togglePasswordVisibility('reg-password', this)"
+                      class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-900 p-1"
+                    >
+                      <i data-lucide="eye" class="w-4 h-4"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Department / Major -->
+                <div class="space-y-1.5">
+                  <label for="reg-dept" class="block text-xs font-black text-slate-800">
+                    Department / Major
+                  </label>
+                  <select 
+                    id="reg-dept" 
+                    name="department" 
+                    class="w-full px-4 py-3 rounded-2xl bg-slate-50 border-2 border-slate-900 text-xs sm:text-sm font-semibold text-slate-900 focus:bg-white focus:outline-none shadow-[2px_2px_0px_0px_#0f172a] transition-all"
+                  >
+                    <option value="Computer Science">Computer Science &amp; IT</option>
+                    <option value="Design & Media">Design &amp; Interactive Media</option>
+                    <option value="Software Engineering">Software Engineering</option>
+                    <option value="Data Science & AI">Data Science &amp; AI</option>
+                    <option value="Business & Marketing">Business &amp; Marketing</option>
+                    <option value="Languages & Linguistics">Languages &amp; Linguistics</option>
+                    <option value="Music & Audio Tech">Music &amp; Audio Tech</option>
+                    <option value="General Engineering">General Engineering</option>
+                  </select>
+                </div>
+
+                <!-- Academic Year -->
+                <div class="space-y-1.5">
+                  <label for="reg-year" class="block text-xs font-black text-slate-800">
+                    Academic Year
+                  </label>
+                  <select 
+                    id="reg-year" 
+                    name="year" 
+                    class="w-full px-4 py-3 rounded-2xl bg-slate-50 border-2 border-slate-900 text-xs sm:text-sm font-semibold text-slate-900 focus:bg-white focus:outline-none shadow-[2px_2px_0px_0px_#0f172a] transition-all"
+                  >
+                    <option value="Freshman (1st Year)">Freshman (1st Year)</option>
+                    <option value="Sophomore (2nd Year)" selected>Sophomore (2nd Year)</option>
+                    <option value="Junior (3rd Year)">Junior (3rd Year)</option>
+                    <option value="Senior (4th Year)">Senior (4th Year)</option>
+                    <option value="Graduate Student">Graduate Student</option>
+                  </select>
+                </div>
+
+                <!-- Short Bio -->
+                <div class="space-y-1.5">
+                  <label for="reg-bio" class="block text-xs font-black text-slate-800">
+                    Brief Bio / Barter Goal
+                  </label>
+                  <input 
+                    type="text" 
+                    id="reg-bio" 
+                    name="bio" 
+                    placeholder="e.g. Excited to swap code lessons for design critique!" 
+                    class="w-full px-4 py-3 rounded-2xl bg-slate-50 border-2 border-slate-900 text-xs sm:text-sm font-semibold text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:translate-x-[1px] focus:translate-y-[1px] shadow-[2px_2px_0px_0px_#0f172a] transition-all"
+                  >
+                </div>
+
+              </div>
+            </div>
+
+            <!-- SECTION 2: Skill DNA Configuration -->
+            <div class="space-y-4 pt-4 border-t-2 border-slate-900">
+              <div class="flex items-center gap-2">
+                <span class="w-6 h-6 rounded-full bg-[#fef08a] border border-slate-900 flex items-center justify-center font-display font-black text-xs">
+                  2
+                </span>
+                <h3 class="font-display font-black text-base text-slate-900">
+                  Your Skill DNA (Offer &amp; Want)
+                </h3>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                
+                <!-- Skill Offered (Card Mint) -->
+                <div class="card-mint p-4 sm:p-5 rounded-2xl border-2 border-slate-900 space-y-3 shadow-[2px_2px_0px_0px_#0f172a]">
+                  <div class="flex items-center justify-between">
+                    <span class="px-2.5 py-0.5 rounded-full bg-white border border-slate-900 text-[10px] font-black uppercase text-emerald-900">
+                      You Teach (Offer)
+                    </span>
+                    <span class="text-[11px] font-bold text-slate-700">Give 1 Skill</span>
+                  </div>
+
+                  <div class="space-y-1">
+                    <label for="reg-offer-name" class="block text-xs font-black text-slate-900">
+                      Skill Name <span class="text-rose-500">*</span>
+                    </label>
+                    <input 
+                      type="text" 
+                      id="reg-offer-name" 
+                      name="offer_name" 
+                      required 
+                      placeholder="e.g. Python Automation, Guitar, Figma" 
+                      class="w-full px-3.5 py-2 rounded-xl bg-white border-2 border-slate-900 text-xs sm:text-sm font-semibold text-slate-900 placeholder-slate-400 focus:outline-none"
+                    >
+                  </div>
+
+                  <div class="grid grid-cols-2 gap-2">
+                    <div class="space-y-1">
+                      <label for="reg-offer-cat" class="block text-[11px] font-black text-slate-900">Category</label>
+                      <select id="reg-offer-cat" name="offer_category" class="w-full px-2 py-1.5 rounded-xl bg-white border-2 border-slate-900 text-xs font-bold text-slate-900 focus:outline-none">
+                        {% for c in categories %}
+                        <option value="{{ c }}">{{ c }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+
+                    <div class="space-y-1">
+                      <label for="reg-offer-lvl" class="block text-[11px] font-black text-slate-900">Level</label>
+                      <select id="reg-offer-lvl" name="offer_level" class="w-full px-2 py-1.5 rounded-xl bg-white border-2 border-slate-900 text-xs font-bold text-slate-900 focus:outline-none">
+                        <option value="Beginner">Beginner</option>
+                        <option value="Intermediate" selected>Intermediate</option>
+                        <option value="Advanced">Advanced</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Skill Wanted (Card Purple) -->
+                <div class="card-purple p-4 sm:p-5 rounded-2xl border-2 border-slate-900 space-y-3 shadow-[2px_2px_0px_0px_#0f172a]">
+                  <div class="flex items-center justify-between">
+                    <span class="px-2.5 py-0.5 rounded-full bg-white border border-slate-900 text-[10px] font-black uppercase text-purple-900">
+                      You Learn (Want)
+                    </span>
+                    <span class="text-[11px] font-bold text-slate-700">Get 1 Skill</span>
+                  </div>
+
+                  <div class="space-y-1">
+                    <label for="reg-want-name" class="block text-xs font-black text-slate-900">
+                      Skill Name <span class="text-rose-500">*</span>
+                    </label>
+                    <input 
+                      type="text" 
+                      id="reg-want-name" 
+                      name="want_name" 
+                      required 
+                      placeholder="e.g. UI/UX Design, Spanish, SQL" 
+                      class="w-full px-3.5 py-2 rounded-xl bg-white border-2 border-slate-900 text-xs sm:text-sm font-semibold text-slate-900 placeholder-slate-400 focus:outline-none"
+                    >
+                  </div>
+
+                  <div class="grid grid-cols-2 gap-2">
+                    <div class="space-y-1">
+                      <label for="reg-want-cat" class="block text-[11px] font-black text-slate-900">Category</label>
+                      <select id="reg-want-cat" name="want_category" class="w-full px-2 py-1.5 rounded-xl bg-white border-2 border-slate-900 text-xs font-bold text-slate-900 focus:outline-none">
+                        {% for c in categories %}
+                        <option value="{{ c }}" {% if c == 'Design' %}selected{% endif %}>{{ c }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+
+                    <div class="space-y-1">
+                      <label for="reg-want-lvl" class="block text-[11px] font-black text-slate-900">Target Level</label>
+                      <select id="reg-want-lvl" name="want_level" class="w-full px-2 py-1.5 rounded-xl bg-white border-2 border-slate-900 text-xs font-bold text-slate-900 focus:outline-none">
+                        <option value="Beginner" selected>Beginner</option>
+                        <option value="Intermediate">Intermediate</option>
+                        <option value="Advanced">Advanced</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Submit Button & Navigation -->
+            <div class="pt-2 border-t-2 border-slate-900 space-y-3">
+              <button 
+                type="submit" 
+                id="register-submit-btn"
+                class="w-full py-4 px-6 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs sm:text-sm shadow-[3px_3px_0px_0px_rgba(0,0,0,0.3)] hover:translate-x-[1px] hover:translate-y-[1px] transition-all flex items-center justify-center gap-2"
+              >
+                <span>Complete Registration &amp; Match My DNA 🧬</span>
+                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+              </button>
+
+              <div class="text-center text-xs font-bold text-slate-600">
+                Already registered? 
+                <a href="{{ url_for('login') }}" class="text-slate-900 underline hover:text-indigo-600">
+                  Sign In here &rarr;
+                </a>
+              </div>
+            </div>
+
+          </form>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column: Dynamic Vector Illustration & Feature Callouts (Educa / Synapse Style) -->
+    <div class="lg:col-span-5 space-y-6">
+      
+      <!-- Main Neo-Brutalist Arched Illustration Card -->
+      <div class="relative neo-card p-6 bg-white overflow-hidden space-y-5">
+        
+        <!-- Header Word Pills -->
+        <div class="flex items-center justify-between">
+          <span class="px-3 py-1 rounded-full bg-[#fef08a] border-2 border-slate-900 text-xs font-black shadow-[1.5px_1.5px_0px_0px_#0f172a]">
+            🧬 Peer Skill Exchange
+          </span>
+          <span class="w-8 h-8 rounded-full border-2 border-slate-900 bg-[#dcfce7] flex items-center justify-center font-bold text-xs">
+            ☺
+          </span>
+        </div>
+
+        <!-- Custom Neo-Brutalist Vector Illustration Container -->
+        <div class="relative rounded-2xl overflow-hidden border-2 border-slate-900 shadow-[3px_3px_0px_0px_#0f172a] bg-[#faf8f5] flex items-center justify-center group">
+          <img 
+            id="dynamic-register-illustrator"
+            src="{{ url_for('static', filename='images/register_illustration.jpg') }}" 
+            alt="Dynamic Skill Exchange Vector Illustration" 
+            class="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105"
+          >
+          
+          <!-- Floating DNA Barter Badge -->
+          <div class="absolute bottom-3 left-3 card-yellow px-3 py-1 rounded-full text-[10px] font-black border-2 border-slate-900 shadow-[2px_2px_0px_0px_#0f172a] flex items-center gap-1.5">
+            <span class="text-pink-600">✦</span>
+            <span>Zero Money &bull; Reciprocal Learning</span>
+          </div>
+        </div>
+
+        <!-- Explanatory Value Callouts -->
+        <div class="space-y-3 pt-2">
+          <h3 class="font-display font-black text-lg text-slate-900">
+            How SkillSwap DNA Pairs You:
+          </h3>
+          
+          <div class="space-y-2 text-xs font-bold text-slate-700">
+            <div class="flex items-start gap-2.5 p-2.5 rounded-xl bg-[#dcfce7] border border-slate-900">
+              <span class="text-sm">🎯</span>
+              <div>
+                <strong>Direct 2-Way Matches:</strong> You teach what they want; they teach what you want in return.
+              </div>
+            </div>
+
+            <div class="flex items-start gap-2.5 p-2.5 rounded-xl bg-[#f3e8ff] border border-slate-900">
+              <span class="text-sm">🔄</span>
+              <div>
+                <strong>3-Person Circular Pods:</strong> Closed loops form when direct bilateral matches aren't possible (A ➔ B ➔ C ➔ A).
+              </div>
+            </div>
+
+            <div class="flex items-start gap-2.5 p-2.5 rounded-xl bg-[#e0f2fe] border border-slate-900">
+              <span class="text-sm">⭐</span>
+              <div>
+                <strong>Campus Points:</strong> Earn +20 Points every time you verify and complete an exchange session.
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Quick Demo Switch Hint -->
+      <div class="p-4 rounded-2xl bg-[#fef08a] border-2 border-slate-900 shadow-[2px_2px_0px_0px_#0f172a] flex items-center justify-between text-xs font-black text-slate-900">
+        <div class="flex items-center gap-2">
+          <span>⚡ Just exploring?</span>
+          <span class="font-semibold text-slate-700">Test with 1-click:</span>
+        </div>
+        <a href="{{ url_for('demo_login', user_id='user_alex') }}" class="px-3 py-1 rounded-full bg-slate-900 text-white font-extrabold hover:bg-slate-800 text-[11px] transition-all">
+          Alex Chen Demo
+        </a>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function togglePasswordVisibility(fieldId, btn) {
+    const input = document.getElementById(fieldId);
+    if (input.type === 'password') {
+      input.type = 'text';
+      btn.innerHTML = '<i data-lucide="eye-off" class="w-4 h-4"></i>';
+    } else {
+      input.type = 'password';
+      btn.innerHTML = '<i data-lucide="eye" class="w-4 h-4"></i>';
+    }
+    lucide.createIcons();
+  }
+
+  // Interactive Avatar Customizer
+  function setAvatarSeed(seed, bgColor) {
+    const preview = document.getElementById('avatar-preview-img');
+    const avatarInput = document.getElementById('reg-avatar');
+    const newUrl = `https://api.dicebear.com/7.x/open-peeps/svg?seed=${encodeURIComponent(seed)}&backgroundColor=${bgColor}`;
+    
+    preview.src = newUrl;
+    avatarInput.value = newUrl;
+
+    // Toast feedback
+    if (typeof showNeoToast === 'function') {
+      showNeoToast(`Illustrated persona updated: ${seed.replace('_', ' ')}!`, 'info');
+    }
+  }
+
+  // Dynamically update avatar as user enters their name
+  const nameInput = document.getElementById('reg-name');
+  if (nameInput) {
+    nameInput.addEventListener('input', function () {
+      const val = this.value.trim();
+      if (val.length >= 2) {
+        const preview = document.getElementById('avatar-preview-img');
+        const avatarInput = document.getElementById('reg-avatar');
+        const colors = ['b6e3f4', 'c0aede', 'd1d4f9', 'ffd5dc', 'ffdfbf'];
+        const chosenColor = colors[Math.abs(val.charCodeAt(0)) % colors.length];
+        const newUrl = `https://api.dicebear.com/7.x/open-peeps/svg?seed=${encodeURIComponent(val)}&backgroundColor=${chosenColor}`;
+        preview.src = newUrl;
+        avatarInput.value = newUrl;
+      }
+    });
+  }
+</script>
+{% endblock %}

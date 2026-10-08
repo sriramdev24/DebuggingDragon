@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+
+{% block title %}Swaps & Pods | SkillSwap DNA{% endblock %}
+
+{% block content %}
+<div class="space-y-8 py-2">
+
+  <!-- Header Banner -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div class="space-y-1">
+      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#fef08a] border-2 border-slate-900 text-xs font-black">
+        <span>Session Operations</span>
+      </div>
+      <h1 class="font-display font-black text-2xl sm:text-4xl text-slate-900 tracking-tight">
+        Swaps & Pod Operations
+      </h1>
+      <p class="text-xs sm:text-sm font-semibold text-slate-600">
+        Coordinate swap schedules, mark sessions completed, and earn your campus points.
+      </p>
+    </div>
+
+    <a href="{{ url_for('matches') }}" class="btn-neo-dark text-xs flex items-center gap-2">
+      <i data-lucide="plus-circle" class="w-4 h-4"></i> New Swap
+    </a>
+  </div>
+
+  <!-- Pending Incoming Requests -->
+  {% if pending_incoming %}
+  <div class="space-y-4">
+    <h3 class="font-display font-black text-lg text-slate-900 flex items-center gap-2">
+      <span>🔔</span> Action Required: Incoming Swap Requests ({{ pending_incoming|length }})
+    </h3>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {% for req in pending_incoming %}
+      {% set initiator = users_map.get(req.initiator_id) %}
+      <div class="card-yellow p-5 space-y-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <img src="{{ initiator.avatar }}" alt="{{ initiator.name }}" class="w-10 h-10 rounded-full object-cover border-2 border-slate-900">
+            <div>
+              <div class="font-black text-slate-900 text-sm">{{ initiator.name }}</div>
+              <div class="text-[11px] font-bold text-slate-700">{{ initiator.department }}</div>
+            </div>
+          </div>
+          <span class="px-2.5 py-0.5 rounded-full bg-white border border-slate-900 text-[10px] font-black uppercase">Pending</span>
+        </div>
+
+        <div class="p-3.5 rounded-2xl bg-white border-2 border-slate-900 text-xs font-bold space-y-1">
+          <div>They Offer: <span class="text-emerald-800 font-extrabold">{{ req.initiator_offers }}</span></div>
+          <div>They Want: <span class="text-indigo-800 font-extrabold">{{ req.recipient_offers }}</span></div>
+          <div class="text-[11px] text-slate-500 italic pt-1 border-t border-slate-200">"{{ req.notes }}"</div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2">
+          <form action="{{ url_for('exchange_action', exchange_id=req._id) }}" method="POST">
+            <input type="hidden" name="action" value="reject">
+            <button type="submit" class="btn-neo-outline text-xs py-1.5 px-3">Decline</button>
+          </form>
+          <form action="{{ url_for('exchange_action', exchange_id=req._id) }}" method="POST">
+            <input type="hidden" name="action" value="accept">
+            <button type="submit" class="btn-neo-dark text-xs py-1.5 px-4">Accept Swap</button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Active Exchanges & Pods -->
+  <div class="space-y-4">
+    <h3 class="font-display font-black text-xl text-slate-900">
+      Active Swaps & Group Pods ({{ active_exchanges|length }})
+    </h3>
+
+    {% if active_exchanges %}
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {% for ex in active_exchanges %}
+        {% set card_theme = 'card-mint' if ex.type != 'pod' else 'card-purple' %}
+        <div class="{{ card_theme }} p-6 space-y-5">
+          
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <span class="px-2.5 py-0.5 rounded-full bg-white border border-slate-900 text-[10px] font-black uppercase">
+                {{ '3-Way Pod' if ex.type == 'pod' else '1-on-1 Swap' }} &bull; {{ ex.status }}
+              </span>
+              <h4 class="font-display font-black text-lg text-slate-900 mt-1">
+                {% if ex.type == 'pod' %}{{ ex.pod_name }}{% else %}{{ ex.initiator_offers }} &harr; {{ ex.recipient_offers }}{% endif %}
+              </h4>
+            </div>
+
+            <span class="px-2.5 py-1 rounded-full bg-white border border-slate-900 text-xs font-black">
+              +20 Points
+            </span>
+          </div>
+
+          <!-- Participants -->
+          <div class="flex items-center gap-2 text-xs font-bold text-slate-800">
+            <span>Members:</span>
+            <div class="flex -space-x-2">
+              {% for p_id in ex.participants %}
+              {% set p_u = users_map.get(p_id) %}
+              {% if p_u %}
+              <img src="{{ p_u.avatar }}" alt="{{ p_u.name }}" class="w-7 h-7 rounded-full object-cover border-2 border-slate-900">
+              {% endif %}
+              {% endfor %}
+            </div>
+            <span class="ml-1 text-[11px] truncate">
+              {% for p_id in ex.participants %}{{ users_map.get(p_id, {}).get('name', 'Peer') }}{% if not loop.last %}, {% endif %}{% endfor %}
+            </span>
+          </div>
+
+          <!-- Progress -->
+          <div class="p-3.5 rounded-2xl bg-white border-2 border-slate-900 space-y-2">
+            <div class="flex justify-between text-xs font-black text-slate-800">
+              <span>Session Progress</span>
+              <span>{{ ex.completed_sessions }} of {{ ex.total_sessions }} Done</span>
+            </div>
+            <div class="w-full bg-slate-100 border border-slate-900 h-3 rounded-full overflow-hidden">
+              <div class="bg-slate-900 h-full" style="width: {{ (ex.completed_sessions / ex.total_sessions * 100)|round }}%"></div>
+            </div>
+            <div class="text-[11px] font-bold text-slate-600 flex justify-between pt-1">
+              <span>Time: {{ ex.scheduled_time }}</span>
+              <span>Place: {{ ex.location }}</span>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex items-center justify-between pt-2 border-t border-slate-900/30">
+            <button onclick="openScheduleModal('{{ ex._id }}', '{{ ex.scheduled_time }}', '{{ ex.location }}')" class="btn-neo-outline text-xs py-1.5 px-3">
+              Update Schedule
+            </button>
+            <form action="{{ url_for('exchange_action', exchange_id=ex._id) }}" method="POST">
+              <input type="hidden" name="action" value="complete_session">
+              <button type="submit" class="btn-neo-dark text-xs py-1.5 px-4">
+                Mark Session Complete (+20 Points)
+              </button>
+            </form>
+          </div>
+
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="neo-card p-10 bg-white text-center text-xs font-semibold text-slate-500">
+        No active exchanges right now. Check your matches to propose one!
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Completed Sessions Archive -->
+  {% if completed_exchanges %}
+  <div class="space-y-4 pt-4 border-t-2 border-slate-900">
+    <h3 class="font-display font-black text-xl text-slate-900">
+      Completed Swaps Archive & Testimonials
+    </h3>
+
+    <div class="space-y-4">
+      {% for ex in completed_exchanges %}
+      <div class="neo-card p-5 bg-white space-y-3">
+        <div class="flex items-center justify-between">
+          <h4 class="font-display font-black text-base text-slate-900">
+            {% if ex.type == 'pod' %}{{ ex.pod_name }}{% else %}{{ ex.initiator_offers }} &harr; {{ ex.recipient_offers }}{% endif %}
+          </h4>
+          <span class="px-2.5 py-0.5 rounded-full bg-[#dcfce7] border border-slate-900 text-[10px] font-black uppercase">Completed</span>
+        </div>
+
+        <div class="space-y-2">
+          {% for r in ex.reviews %}
+          {% set rev_from = users_map.get(r.from_user) %}
+          <div class="p-3 rounded-2xl bg-[#faf8f5] border border-slate-900 text-xs font-semibold space-y-1">
+            <div class="flex justify-between font-bold text-slate-900">
+              <span>{{ rev_from.name if rev_from else 'Student' }}</span>
+              <span>⭐ {{ r.rating }} / 5</span>
+            </div>
+            <p class="text-slate-700 italic">"{{ r.comment }}"</p>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="flex justify-end pt-1">
+          <button onclick="openReviewModal('{{ ex._id }}')" class="btn-neo-outline text-xs py-1.5 px-3">
+            Leave Review
+          </button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+
+<!-- Schedule Modal -->
+<div id="schedule-modal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden items-center justify-center p-4">
+  <div class="neo-card max-w-md w-full p-6 bg-white border-2 border-slate-900 shadow-[6px_6px_0px_0px_#0f172a] space-y-4">
+    <div class="flex items-center justify-between border-b-2 border-slate-900 pb-3">
+      <h3 class="font-display font-black text-base text-slate-900">Update Session Schedule</h3>
+      <button onclick="closeScheduleModal()" class="w-8 h-8 rounded-full border border-slate-900 bg-slate-100 flex items-center justify-center font-bold">✕</button>
+    </div>
+
+    <form id="schedule-form" method="POST" class="space-y-4 text-xs font-bold text-slate-700">
+      <input type="hidden" name="action" value="update_schedule">
+      <div>
+        <label class="block mb-1 text-slate-900">Time Slot / Days</label>
+        <input type="text" id="modal-sched-time" name="scheduled_time" class="w-full px-3.5 py-2.5 rounded-xl bg-white border-2 border-slate-900 text-slate-900">
+      </div>
+      <div>
+        <label class="block mb-1 text-slate-900">Location / Platform</label>
+        <input type="text" id="modal-sched-loc" name="location" class="w-full px-3.5 py-2.5 rounded-xl bg-white border-2 border-slate-900 text-slate-900">
+      </div>
+      <div class="flex justify-end gap-2 pt-2 border-t-2 border-slate-900">
+        <button type="button" onclick="closeScheduleModal()" class="btn-neo-outline text-xs py-2 px-4">Cancel</button>
+        <button type="submit" class="btn-neo-dark text-xs py-2 px-6">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Review Modal -->
+<div id="review-modal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden items-center justify-center p-4">
+  <div class="neo-card max-w-md w-full p-6 bg-white border-2 border-slate-900 shadow-[6px_6px_0px_0px_#0f172a] space-y-4">
+    <div class="flex items-center justify-between border-b-2 border-slate-900 pb-3">
+      <h3 class="font-display font-black text-base text-slate-900">Submit Peer Review</h3>
+      <button onclick="closeReviewModal()" class="w-8 h-8 rounded-full border border-slate-900 bg-slate-100 flex items-center justify-center font-bold">✕</button>
+    </div>
+
+    <form id="review-form" method="POST" class="space-y-4 text-xs font-bold text-slate-700">
+      <div>
+        <label class="block mb-1 text-slate-900">Rating</label>
+        <select name="rating" class="w-full px-3.5 py-2.5 rounded-xl bg-white border-2 border-slate-900 text-slate-900">
+          <option value="5">⭐⭐⭐⭐⭐ 5 - Exceptional knowledge barter!</option>
+          <option value="4">⭐⭐⭐⭐ 4 - Great mentor, highly recommended</option>
+          <option value="3">⭐⭐⭐ 3 - Good session</option>
+        </select>
+      </div>
+      <div>
+        <label class="block mb-1 text-slate-900">Comment</label>
+        <textarea name="comment" rows="3" required placeholder="What was great about their mentoring?" class="w-full px-3.5 py-2.5 rounded-xl bg-white border-2 border-slate-900 text-slate-900"></textarea>
+      </div>
+      <div class="flex justify-end gap-2 pt-2 border-t-2 border-slate-900">
+        <button type="button" onclick="closeReviewModal()" class="btn-neo-outline text-xs py-2 px-4">Cancel</button>
+        <button type="submit" class="btn-neo-dark text-xs py-2 px-6">Submit Review</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function openScheduleModal(exId, time, loc) {
+    document.getElementById('schedule-form').action = '/exchanges/action/' + exId;
+    document.getElementById('modal-sched-time').value = time;
+    document.getElementById('modal-sched-loc').value = loc;
+    const modal = document.getElementById('schedule-modal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+  }
+
+  function closeScheduleModal() {
+    const modal = document.getElementById('schedule-modal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+
+  function openReviewModal(exId) {
+    document.getElementById('review-form').action = '/exchanges/review/' + exId;
+    const modal = document.getElementById('review-modal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+  }
+
+  function closeReviewModal() {
+    const modal = document.getElementById('review-modal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+</script>
+{% endblock %}

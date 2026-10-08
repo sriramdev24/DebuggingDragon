@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}{{ user.name }} | SkillSwap DNA{% endblock %}
+
+{% block content %}
+<div class="space-y-8 max-w-5xl mx-auto py-2">
+
+  <!-- Header Card (Neo-Brutalist) -->
+  <div class="neo-card p-6 sm:p-8 bg-white space-y-6">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+      
+      <div class="flex items-center gap-4">
+        <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-2 border-slate-900 bg-[#fef08a] shadow-[3px_3px_0px_0px_#0f172a]">
+          <img src="{{ user.avatar }}" alt="{{ user.name }}" class="w-full h-full object-cover">
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-display font-black text-2xl sm:text-3xl text-slate-900">{{ user.name }}</h1>
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-[#dcfce7] border border-slate-900">Verified Peer</span>
+          </div>
+          <div class="text-xs sm:text-sm font-bold text-slate-700 mt-0.5">{{ user.department }} &bull; {{ user.year }}</div>
+          <div class="text-xs text-amber-600 font-extrabold mt-1">⭐ {{ user.rating }} &bull; {{ user.karma_points }} Points</div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-wrap items-center gap-2">
+        {% if user._id != current_user._id %}
+        <form action="{{ url_for('follow_user', user_id=user._id) }}" method="POST">
+          <button type="submit" class="btn-neo-outline text-xs py-2 px-4">
+            {% if is_following %}Following ✓{% else %}+ Follow{% endif %}
+          </button>
+        </form>
+        <a href="{{ url_for('messages', peer_id=user._id) }}" class="btn-neo-outline text-xs py-2 px-4">
+          Message
+        </a>
+        <button onclick="openSwapModal('{{ user._id }}', '{{ user.name }}', 'Skill Barter', 'Reciprocal Swap')" class="btn-neo-dark text-xs py-2 px-5">
+          Propose Barter
+        </button>
+        {% else %}
+        <a href="{{ url_for('profile') }}" class="btn-neo-dark text-xs py-2 px-5">
+          Edit Profile
+        </a>
+        {% endif %}
+      </div>
+
+    </div>
+
+    <p class="text-xs sm:text-sm text-slate-700 font-medium leading-relaxed p-4 rounded-2xl bg-[#faf8f5] border-2 border-slate-900">
+      "{{ user.bio }}"
+    </p>
+
+    <!-- Metrics -->
+    <div class="flex flex-wrap items-center gap-6 pt-2 border-t-2 border-slate-900/10 text-xs font-bold text-slate-700">
+      <div><strong>{{ user.followers|length if user.followers else 0 }}</strong> Followers</div>
+      <div><strong>{{ user.following|length if user.following else 0 }}</strong> Following</div>
+      <div><strong>{{ user.completed_swaps }}</strong> Completed Swaps</div>
+      <div>Format: <strong class="text-slate-900">{{ user.availability.format if user.availability else 'Hybrid' }}</strong></div>
+    </div>
+  </div>
+
+  <!-- Skills Offered & Wanted in Pastel Neo-Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    
+    <!-- Skills Offered (Mint Card) -->
+    <div class="card-mint p-6 space-y-4">
+      <h3 class="font-display font-black text-lg text-slate-900 flex items-center gap-2">
+        <span>📤</span> Offers to Teach
+      </h3>
+      <div class="space-y-3">
+        {% for s in user.skills_offered %}
+        <div class="p-3.5 rounded-2xl bg-white border-2 border-slate-900 text-xs font-bold shadow-[2px_2px_0px_0px_#0f172a] space-y-1">
+          <div class="flex justify-between">
+            <span class="text-slate-900 text-sm font-extrabold">{{ s.name }}</span>
+            <span class="px-2 py-0.5 rounded-full bg-[#fef08a] border border-slate-900 text-[10px]">{{ s.level }}</span>
+          </div>
+          <div class="text-slate-600 text-[11px]">{{ s.category }} &bull; {{ s.experience }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Skills Wanted (Purple Card) -->
+    <div class="card-purple p-6 space-y-4">
+      <h3 class="font-display font-black text-lg text-slate-900 flex items-center gap-2">
+        <span>🎯</span> Wants to Learn
+      </h3>
+      <div class="space-y-3">
+        {% for s in user.skills_wanted %}
+        <div class="p-3.5 rounded-2xl bg-white border-2 border-slate-900 text-xs font-bold shadow-[2px_2px_0px_0px_#0f172a] space-y-1">
+          <div class="flex justify-between">
+            <span class="text-slate-900 text-sm font-extrabold">{{ s.name }}</span>
+            <span class="px-2 py-0.5 rounded-full bg-[#ffe4e6] border border-slate-900 text-[10px]">{{ s.target_level }}</span>
+          </div>
+          <div class="text-slate-600 text-[11px]">{{ s.category }}</div>
+          <p class="text-slate-700 italic font-medium">"{{ s.goal }}"</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Availability Box -->
+  <div class="card-yellow p-6 space-y-3">
+    <h3 class="font-display font-black text-base text-slate-900">Weekly Availability</h3>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-bold text-slate-800">
+      <div class="p-3 rounded-2xl bg-white border-2 border-slate-900">
+        <div>Days: <strong>{{ user.availability.days|join(', ') if user.availability.days else 'Flexible' }}</strong></div>
+      </div>
+      <div class="p-3 rounded-2xl bg-white border-2 border-slate-900">
+        <div>Time Slots: <strong>{{ user.availability.slots|join(', ') if user.availability.slots else 'To be coordinated' }}</strong></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Propose Swap Modal -->
+<div id="swap-modal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden items-center justify-center p-4">
+  <div class="neo-card max-w-lg w-full p-6 sm:p-8 bg-white border-2 border-slate-900 shadow-[6px_6px_0px_0px_#0f172a] space-y-4">
+    <div class="flex items-center justify-between border-b-2 border-slate-900 pb-3">
+      <h3 class="font-display font-black text-lg text-slate-900">Propose Skill Barter</h3>
+      <button onclick="closeSwapModal()" class="w-8 h-8 rounded-full border border-slate-900 bg-slate-100 flex items-center justify-center font-bold">✕</button>
+    </div>
+
+    <form action="{{ url_for('create_exchange') }}" method="POST" class="space-y-4 text-xs font-bold text-slate-700">
+      <input type="hidden" name="type" value="direct">
+      <input type="hidden" id="modal-partner-id" name="partner_id">
+      
+      <div>
+        <label class="block mb-1 text-slate-900">Exchange Partner</label>
+        <input type="text" id="modal-partner-name" readonly class="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 border-2 border-slate-900 text-slate-900 font-extrabold">
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block mb-1 text-emerald-800">You Offer (To Teach)</label>
+          <input type="text" id="modal-initiator-offers" name="initiator_offers" class="w-full px-3 py-2 rounded-xl bg-white border-2 border-slate-900 text-slate-900">
+        </div>
+        <div>
+          <label class="block mb-1 text-indigo-800">They Offer (To Learn)</label>
+          <input type="text" id="modal-recipient-offers" name="recipient_offers" class="w-full px-3 py-2 rounded-xl bg-white border-2 border-slate-900 text-slate-900">
+        </div>
+      </div>
+
+      <div>
+        <label class="block mb-1 text-slate-900">Proposed Schedule</label>
+        <input type="text" name="scheduled_time" value="Twice a week (1 hr each)" class="w-full px-3 py-2 rounded-xl bg-white border-2 border-slate-900 text-slate-900">
+      </div>
+
+      <div>
+        <label class="block mb-1 text-slate-900">Location / Platform</label>
+        <input type="text" name="location" value="Campus Library Study Room / Discord" class="w-full px-3 py-2 rounded-xl bg-white border-2 border-slate-900 text-slate-900">
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2 border-t-2 border-slate-900">
+        <button type="button" onclick="closeSwapModal()" class="btn-neo-outline text-xs py-2 px-4">Cancel</button>
+        <button type="submit" class="btn-neo-dark text-xs py-2 px-6">Send Request</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function openSwapModal(partnerId, partnerName, youTeach, theyTeach) {
+    document.getElementById('modal-partner-id').value = partnerId;
+    document.getElementById('modal-partner-name').value = partnerName;
+    document.getElementById('modal-initiator-offers').value = youTeach;
+    document.getElementById('modal-recipient-offers').value = theyTeach;
+    const modal = document.getElementById('swap-modal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+  }
+
+  function closeSwapModal() {
+    const modal = document.getElementById('swap-modal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+</script>
+{% endblock %}

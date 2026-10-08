@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}Mentors & Peers | SkillSwap DNA{% endblock %}
+
+{% block content %}
+<div class="space-y-8 py-2">
+
+  <!-- Header Banner -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div class="space-y-1">
+      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#fef08a] border-2 border-slate-900 text-xs font-black">
+        <span>Campus Mentors & Peers</span>
+      </div>
+      <h1 class="font-display font-black text-2xl sm:text-4xl text-slate-900 tracking-tight">
+        Browse Campus Mentors
+      </h1>
+      <p class="text-xs sm:text-sm font-semibold text-slate-600">
+        Discover peers with complementary knowledge and explore their proficiency tiers.
+      </p>
+    </div>
+
+    <span class="px-4 py-2 rounded-full bg-white border-2 border-slate-900 text-xs font-black text-slate-900 shadow-[2px_2px_0px_0px_#0f172a]">
+      {{ users|length }} Peers Registered
+    </span>
+  </div>
+
+  <!-- Search & Filter Bar (Neo-Brutalist Pills) -->
+  <form method="GET" action="{{ url_for('directory') }}" class="neo-card p-4 sm:p-5 bg-white flex flex-col md:flex-row items-stretch md:items-center gap-3">
+    <div class="relative flex-1">
+      <i data-lucide="search" class="w-4 h-4 text-slate-600 absolute left-4 top-3"></i>
+      <input type="text" name="q" value="{{ query }}" placeholder="Search by name, department, or skill (e.g. Python, Figma, Spanish)..." class="w-full pl-11 pr-4 py-2 rounded-full bg-[#faf8f5] border-2 border-slate-900 text-xs font-semibold text-slate-900 placeholder-slate-400 focus:outline-none">
+    </div>
+
+    <div class="w-full md:w-56">
+      <select name="category" class="w-full px-4 py-2 rounded-full bg-[#faf8f5] border-2 border-slate-900 text-xs font-bold text-slate-900 focus:outline-none">
+        <option value="">All Categories</option>
+        {% for cat in categories %}
+        <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="w-full md:w-44">
+      <select name="level" class="w-full px-4 py-2 rounded-full bg-[#faf8f5] border-2 border-slate-900 text-xs font-bold text-slate-900 focus:outline-none">
+        <option value="">All Levels</option>
+        {% for lvl in levels %}
+        <option value="{{ lvl }}" {% if selected_level == lvl %}selected{% endif %}>{{ lvl }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <button type="submit" class="btn-neo-dark text-xs py-2 px-5">Filter</button>
+      {% if query or selected_category or selected_level %}
+      <a href="{{ url_for('directory') }}" class="btn-neo-outline text-xs py-2 px-3">Reset</a>
+      {% endif %}
+    </div>
+  </form>
+
+  <!-- Peers Grid (Matching Screenshot 1 Pastel Cards Style) -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for u in users %}
+    {% set card_theme = 'card-mint' if loop.index % 3 == 1 else ('card-blue' if loop.index % 3 == 2 else 'card-purple') %}
+    
+    <div class="{{ card_theme }} p-6 flex flex-col justify-between space-y-6 transition-transform hover:-translate-y-1">
+      
+      <div class="space-y-4">
+        <!-- Name Badge & Points -->
+        <div class="flex items-center justify-between">
+          <span class="px-3.5 py-1 rounded-full bg-white border-2 border-slate-900 text-xs font-black shadow-[1.5px_1.5px_0px_0px_#0f172a]">
+            {{ u.name }}
+          </span>
+          <span class="px-2.5 py-0.5 rounded-full bg-white/80 border border-slate-900 text-[11px] font-black">
+            {{ u.karma_points }} Points
+          </span>
+        </div>
+
+        <!-- Role Subtitle (Screenshot 1: "Teacher in English") -->
+        <div>
+          <h3 class="font-display font-black text-xl text-slate-900">
+            Teacher in {{ u.skills_offered[0].name if u.skills_offered else 'Specialized Skills' }}
+          </h3>
+          <div class="text-xs font-bold text-slate-700 mt-0.5">
+            {{ u.department }} &bull; {{ u.year }}
+          </div>
+        </div>
+
+        <!-- Circle Student Photo -->
+        <div class="py-1 flex justify-center">
+          <div class="w-28 h-28 rounded-full overflow-hidden border-2 border-slate-900 shadow-[2px_2px_0px_0px_#0f172a] bg-white">
+            <img src="{{ u.avatar }}" alt="{{ u.name }}" class="w-full h-full object-cover">
+          </div>
+        </div>
+
+        <!-- Skills Overview Box -->
+        <div class="p-3.5 rounded-2xl bg-white/80 border-2 border-slate-900 text-xs space-y-2">
+          <div>
+            <div class="text-[10px] font-black uppercase text-emerald-800 tracking-wider">Offers to Teach:</div>
+            <div class="font-bold text-slate-900 truncate">
+              {{ u.skills_offered|map(attribute='name')|join(', ') }}
+            </div>
+          </div>
+          <div class="pt-1 border-t border-slate-200">
+            <div class="text-[10px] font-black uppercase text-purple-800 tracking-wider">Wants to Learn:</div>
+            <div class="font-bold text-slate-900 truncate">
+              {{ u.skills_wanted|map(attribute='name')|join(', ') }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Actions -->
+      <div class="flex items-center justify-between pt-2 border-t border-slate-900/30">
+        <a href="{{ url_for('switch_user', user_id=u._id) }}" class="text-xs font-black text-slate-900 underline">
+          Switch to {{ u.name.split()[0] }}
+        </a>
+        <a href="{{ url_for('messages', peer_id=u._id) }}" class="circle-arrow-btn" title="Message {{ u.name }}">
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </a>
+      </div>
+
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}
